@@ -1,0 +1,11 @@
+bigtable-client
+Copyright 2016 Spotify AB
+
+This product includes software developed at
+Spotify AB (http://www.spotify.com/).
+
+This project uses google-cloud-bigtable from Google, which is
+licensed with Apache Licence 2.0.
+
+This project uses guava from Google, which is licensed with
+Apache Licence 2.0.

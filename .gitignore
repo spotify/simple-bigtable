@@ -1,0 +1,28 @@
+## Maven stuff
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+## Artifacts
+*.class
+
+## Package Files
+*.jar
+*.war
+*.ear
+target
+
+## IntelliJ
+.idea
+*.iml
+
+## Logs
+*.log
+
+## Temp
+*~
+.#*
+
+dependency-reduced-pom.xml
