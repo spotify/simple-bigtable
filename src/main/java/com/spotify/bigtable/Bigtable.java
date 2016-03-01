@@ -23,7 +23,9 @@ import com.google.cloud.bigtable.grpc.BigtableSession;
 import com.spotify.bigtable.mutate.BigtableMutation;
 import com.spotify.bigtable.read.TableRead;
 import com.spotify.bigtable.readmodifywrite.BigtableReadModifyWrite;
+import com.spotify.bigtable.readmodifywrite.BigtableReadModifyWriteImpl;
 import com.spotify.bigtable.sample.BigtableSampleRowKeys;
+import com.spotify.bigtable.sample.BigtableSampleRowKeysImpl;
 
 import java.io.IOException;
 
@@ -91,7 +93,7 @@ public class Bigtable {
    * @return BigtableReadModifyWrite
    */
   public BigtableReadModifyWrite readModifyWrite(final String table, final String row) {
-    return new BigtableReadModifyWrite.BigtableReadModifyWriteImpl(this, table, row);
+    return new BigtableReadModifyWriteImpl(this, table, row);
   }
 
   /**
@@ -101,6 +103,6 @@ public class Bigtable {
    * @return BigtableSampleRowKeys
    */
   public BigtableSampleRowKeys sampleRowKeys(final String table) {
-    return new BigtableSampleRowKeys.BigtableSampleRowKeysImpl(this, table);
+    return new BigtableSampleRowKeysImpl(this, table);
   }
 }

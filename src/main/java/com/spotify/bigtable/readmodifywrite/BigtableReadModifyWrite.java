@@ -19,13 +19,9 @@
 
 package com.spotify.bigtable.readmodifywrite;
 
-import com.google.bigtable.v1.ReadModifyWriteRowRequest;
-import com.google.bigtable.v1.ReadModifyWriteRule;
 import com.google.bigtable.v1.Row;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.spotify.bigtable.Bigtable;
-import com.spotify.bigtable.BigtableTable;
 
 public interface BigtableReadModifyWrite {
 
@@ -45,68 +41,4 @@ public interface BigtableReadModifyWrite {
 
   }
 
-  class BigtableReadModifyWriteImpl extends BigtableTable implements BigtableReadModifyWrite {
-
-    private final ReadModifyWriteRowRequest.Builder readModifyWrite;
-
-    public BigtableReadModifyWriteImpl(final Bigtable bigtable, final String table, final String row) {
-      super(bigtable, table);
-      this.readModifyWrite = ReadModifyWriteRowRequest.newBuilder()
-              .setTableName(getFullTableName())
-              .setRowKey(ByteString.copyFromUtf8(row));
-    }
-
-    @Override
-    public Row execute() {
-      return bigtable.getSession().getDataClient().readModifyWriteRow(readModifyWrite.build());
-    }
-
-    @Override
-    public ListenableFuture<Row> executeAsync() {
-      return bigtable.getSession().getDataClient().readModifyWriteRowAsync(readModifyWrite.build());
-    }
-
-    @Override
-    public Read read(final String column) {
-      final String[] split = column.split(":", 2);
-      return read(split[0], split[1]);
-    }
-
-    @Override
-    public Read read(final String columnFamily, final String columnQualifier) {
-      final ReadModifyWriteRule.Builder rule = ReadModifyWriteRule.newBuilder()
-              .setFamilyName(columnFamily)
-              .setColumnQualifier(ByteString.copyFromUtf8(columnFamily));
-      return new BigtableReadModifyWriteReadImpl(this, rule);
-    }
-
-    protected BigtableReadModifyWrite addRule(final ReadModifyWriteRule.Builder rule) {
-      readModifyWrite.addRules(rule);
-      return this;
-    }
-  }
-
-  class BigtableReadModifyWriteReadImpl implements BigtableReadModifyWrite.Read {
-
-    private final BigtableReadModifyWriteImpl bigtableReadModifyWrite;
-    private final ReadModifyWriteRule.Builder readModifyWriteRule;
-
-    public BigtableReadModifyWriteReadImpl(final BigtableReadModifyWriteImpl bigtableReadModifyWrite,
-                                           final ReadModifyWriteRule.Builder readModifyWriteRule) {
-      this.bigtableReadModifyWrite = bigtableReadModifyWrite;
-      this.readModifyWriteRule = readModifyWriteRule;
-    }
-
-    @Override
-    public BigtableReadModifyWrite thenAppendValue(final ByteString value) {
-      readModifyWriteRule.setAppendValue(value);
-      return bigtableReadModifyWrite.addRule(readModifyWriteRule);
-    }
-
-    @Override
-    public BigtableReadModifyWrite thenIncrementAmount(final long incBy) {
-      readModifyWriteRule.setIncrementAmount(incBy);
-      return bigtableReadModifyWrite.addRule(readModifyWriteRule);
-    }
-  }
 }

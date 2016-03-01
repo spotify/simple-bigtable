@@ -20,10 +20,15 @@
 package com.spotify.bigtable;
 
 import com.google.cloud.bigtable.grpc.BigtableSession;
+import com.spotify.bigtable.mutate.BigtableMutation;
+import com.spotify.bigtable.read.TableRead;
+import com.spotify.bigtable.readmodifywrite.BigtableReadModifyWriteImpl;
+import com.spotify.bigtable.sample.BigtableSampleRowKeysImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -59,5 +64,49 @@ public class BigtableTest {
   @Test
   public void testGetCluster() throws Exception {
     assertEquals("cluster", bigtable.getCluster());
+  }
+
+  @Test
+  public void testClose() throws Exception {
+    bigtable.close();
+    Mockito.verify(bigtableSession).close();
+  }
+
+  @Test
+  public void testRead() throws Exception {
+    final TableRead.TableReadImpl table = (TableRead.TableReadImpl) bigtable.read("table");
+
+
+    assertEquals(bigtable, table.bigtable);
+    assertEquals("table", table.table);
+  }
+
+  @Test
+  public void testMutateRow() throws Exception {
+    final BigtableMutation.BigtableMutationImpl mutation =
+            (BigtableMutation.BigtableMutationImpl) bigtable.mutateRow("table", "row");
+
+    assertEquals(bigtable, mutation.bigtable);
+    assertEquals("table", mutation.table);
+    assertEquals("row",  mutation.getMutateRowRequest().getRowKey().toStringUtf8());
+  }
+
+  @Test
+  public void testReadModifyWrite() throws Exception {
+    final BigtableReadModifyWriteImpl readModifyWrite =
+            (BigtableReadModifyWriteImpl) bigtable.readModifyWrite("table", "row");
+
+    assertEquals(bigtable, readModifyWrite.bigtable);
+    assertEquals("table", readModifyWrite.table);
+    assertEquals("row",  readModifyWrite.getReadModifyWriteRequest().getRowKey().toStringUtf8());
+  }
+
+  @Test
+  public void testSampleRowKeys() throws Exception {
+    final BigtableSampleRowKeysImpl sampleRowKeys =
+            (BigtableSampleRowKeysImpl) bigtable.sampleRowKeys("table");
+
+    assertEquals(bigtable, sampleRowKeys.bigtable);
+    assertEquals("table", sampleRowKeys.table);
   }
 }

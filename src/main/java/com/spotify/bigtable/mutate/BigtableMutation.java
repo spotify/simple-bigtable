@@ -26,6 +26,7 @@ import com.google.bigtable.v1.Mutation.DeleteFromFamily;
 import com.google.bigtable.v1.Mutation.DeleteFromRow;
 import com.google.bigtable.v1.Mutation.SetCell;
 import com.google.bigtable.v1.TimestampRange;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
@@ -219,6 +220,14 @@ public interface BigtableMutation {
       mutateRowRequest.addMutations(Mutation.newBuilder().setSetCell(setCell));
       return this;
     }
+
+    @VisibleForTesting
+    public MutateRowRequest.Builder getMutateRowRequest() {
+      return mutateRowRequest;
+    }
+
+    @VisibleForTesting
+
     
     private SetCell.Builder setCell(final String columnFamily, final String columnQualifier,
                                     final ByteString value, final Optional<Long> timestampMicros) {
