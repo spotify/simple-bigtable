@@ -75,6 +75,7 @@ public class BigtableMutationImplTest {
 
     assertEquals(1, bigtableMutationImpl.getMutateRowRequest().getMutationsCount());
     final Mutation mutation = bigtableMutationImpl.getMutateRowRequest().getMutations(0);
+    assertEquals(Mutation.MutationCase.DELETE_FROM_ROW, mutation.getMutationCase());
     assertEquals(Mutation.DeleteFromRow.getDefaultInstance(), mutation.getDeleteFromRow());
     assertEquals(Mutation.DeleteFromFamily.getDefaultInstance(), mutation.getDeleteFromFamily());
     assertEquals(Mutation.DeleteFromColumn.getDefaultInstance(), mutation.getDeleteFromColumn());
@@ -96,6 +97,7 @@ public class BigtableMutationImplTest {
 
     assertEquals(1, bigtableMutationImpl.getMutateRowRequest().getMutationsCount());
     final Mutation mutation = bigtableMutationImpl.getMutateRowRequest().getMutations(0);
+    assertEquals(Mutation.MutationCase.DELETE_FROM_FAMILY, mutation.getMutationCase());
     assertEquals("family", mutation.getDeleteFromFamily().getFamilyName());
     assertEquals(Mutation.DeleteFromRow.getDefaultInstance(), mutation.getDeleteFromRow());
     assertEquals(Mutation.DeleteFromColumn.getDefaultInstance(), mutation.getDeleteFromColumn());
@@ -117,6 +119,7 @@ public class BigtableMutationImplTest {
 
     assertEquals(1, bigtableMutationImpl.getMutateRowRequest().getMutationsCount());
     final Mutation mutation = bigtableMutationImpl.getMutateRowRequest().getMutations(0);
+    assertEquals(Mutation.MutationCase.DELETE_FROM_COLUMN, mutation.getMutationCase());
     assertEquals("family", mutation.getDeleteFromColumn().getFamilyName());
     assertEquals("qualifier", mutation.getDeleteFromColumn().getColumnQualifier().toStringUtf8());
     assertEquals(Mutation.DeleteFromRow.getDefaultInstance(), mutation.getDeleteFromRow());
@@ -139,6 +142,7 @@ public class BigtableMutationImplTest {
 
     assertEquals(1, bigtableMutationImpl.getMutateRowRequest().getMutationsCount());
     final Mutation mutation = bigtableMutationImpl.getMutateRowRequest().getMutations(0);
+    assertEquals(Mutation.MutationCase.DELETE_FROM_COLUMN, mutation.getMutationCase());
     assertEquals("family", mutation.getDeleteFromColumn().getFamilyName());
     assertEquals("qualifier", mutation.getDeleteFromColumn().getColumnQualifier().toStringUtf8());
     assertEquals(Mutation.DeleteFromRow.getDefaultInstance(), mutation.getDeleteFromRow());
@@ -163,6 +167,7 @@ public class BigtableMutationImplTest {
     assertEquals(2, bigtableMutationImpl.getMutateRowRequest().getMutationsCount());
 
     Mutation mutation = bigtableMutationImpl.getMutateRowRequest().getMutations(0);
+    assertEquals(Mutation.MutationCase.DELETE_FROM_COLUMN, mutation.getMutationCase());
     assertEquals("family", mutation.getDeleteFromColumn().getFamilyName());
     assertEquals("qualifier", mutation.getDeleteFromColumn().getColumnQualifier().toStringUtf8());
     assertEquals(TimestampRange.getDefaultInstance(), mutation.getDeleteFromColumn().getTimeRange());
@@ -171,6 +176,7 @@ public class BigtableMutationImplTest {
     assertEquals(Mutation.SetCell.getDefaultInstance(), mutation.getSetCell());
 
     mutation = bigtableMutationImpl.getMutateRowRequest().getMutations(1);
+    assertEquals(Mutation.MutationCase.DELETE_FROM_COLUMN, mutation.getMutationCase());
     assertEquals("family", mutation.getDeleteFromColumn().getFamilyName());
     assertEquals("qualifier", mutation.getDeleteFromColumn().getColumnQualifier().toStringUtf8());
     assertEquals(100L, mutation.getDeleteFromColumn().getTimeRange().getStartTimestampMicros());
@@ -196,6 +202,7 @@ public class BigtableMutationImplTest {
 
     assertEquals(2, bigtableMutationImpl.getMutateRowRequest().getMutationsCount());
     for (Mutation mutation : bigtableMutationImpl.getMutateRowRequest().getMutationsList()) {
+      assertEquals(Mutation.MutationCase.SET_CELL, mutation.getMutationCase());
       assertEquals("family", mutation.getSetCell().getFamilyName());
       assertEquals("qualifier", mutation.getSetCell().getColumnQualifier().toStringUtf8());
       assertEquals("value", mutation.getSetCell().getValue().toStringUtf8());
@@ -223,6 +230,7 @@ public class BigtableMutationImplTest {
     assertEquals(2, bigtableMutationImpl.getMutateRowRequest().getMutationsCount());
 
     for (Mutation mutation : bigtableMutationImpl.getMutateRowRequest().getMutationsList()) {
+      assertEquals(Mutation.MutationCase.SET_CELL, mutation.getMutationCase());
       assertEquals("family", mutation.getSetCell().getFamilyName());
       assertEquals("qualifier", mutation.getSetCell().getColumnQualifier().toStringUtf8());
       assertEquals("value", mutation.getSetCell().getValue().toStringUtf8());
