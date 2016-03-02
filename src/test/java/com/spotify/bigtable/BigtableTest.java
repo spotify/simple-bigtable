@@ -20,7 +20,7 @@
 package com.spotify.bigtable;
 
 import com.google.cloud.bigtable.grpc.BigtableSession;
-import com.spotify.bigtable.mutate.BigtableMutation;
+import com.spotify.bigtable.mutate.BigtableMutationImpl;
 import com.spotify.bigtable.read.TableRead;
 import com.spotify.bigtable.readmodifywrite.BigtableReadModifyWriteImpl;
 import com.spotify.bigtable.sample.BigtableSampleRowKeysImpl;
@@ -83,8 +83,8 @@ public class BigtableTest {
 
   @Test
   public void testMutateRow() throws Exception {
-    final BigtableMutation.BigtableMutationImpl mutation =
-            (BigtableMutation.BigtableMutationImpl) bigtable.mutateRow("table", "row");
+    final BigtableMutationImpl mutation =
+            (BigtableMutationImpl) bigtable.mutateRow("table", "row");
 
     assertEquals(bigtable, mutation.bigtable);
     assertEquals("table", mutation.table);

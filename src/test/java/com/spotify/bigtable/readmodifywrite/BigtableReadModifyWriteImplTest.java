@@ -95,6 +95,9 @@ public class BigtableReadModifyWriteImplTest {
             .thenAppendValue(ByteString.copyFromUtf8("value"));
     verifyReadModifyWriteRequest();
 
+    appendValue.execute();
+    appendValue.executeAsync();
+
     assertEquals(1, appendValue.getReadModifyWriteRequest().getRulesCount());
     assertEquals(ReadModifyWriteRule.getDefaultInstance(), appendValue.getReadModifyWriteRule().build());
 
@@ -104,8 +107,6 @@ public class BigtableReadModifyWriteImplTest {
     assertEquals("value", rule.getAppendValue().toStringUtf8());
     assertEquals(0L, rule.getIncrementAmount());
 
-    appendValue.execute();
-    appendValue.executeAsync();
     verify(bigtableMock.getMockedDataClient()).readModifyWriteRow(appendValue.getReadModifyWriteRequest().build());
     verify(bigtableMock.getMockedDataClient()).readModifyWriteRowAsync(appendValue.getReadModifyWriteRequest().build());
     verifyNoMoreInteractions(bigtableMock.getMockedDataClient());
@@ -118,6 +119,9 @@ public class BigtableReadModifyWriteImplTest {
             .thenIncrementAmount(15);
     verifyReadModifyWriteRequest();
 
+    appendValue.execute();
+    appendValue.executeAsync();
+
     assertEquals(1, appendValue.getReadModifyWriteRequest().getRulesCount());
     assertEquals(ReadModifyWriteRule.getDefaultInstance(), appendValue.getReadModifyWriteRule().build());
 
@@ -127,8 +131,6 @@ public class BigtableReadModifyWriteImplTest {
     assertEquals(ByteString.EMPTY, rule.getAppendValue());
     assertEquals(15L, rule.getIncrementAmount());
 
-    appendValue.execute();
-    appendValue.executeAsync();
     verify(bigtableMock.getMockedDataClient()).readModifyWriteRow(appendValue.getReadModifyWriteRequest().build());
     verify(bigtableMock.getMockedDataClient()).readModifyWriteRowAsync(appendValue.getReadModifyWriteRequest().build());
     verifyNoMoreInteractions(bigtableMock.getMockedDataClient());
@@ -141,6 +143,9 @@ public class BigtableReadModifyWriteImplTest {
             .read("family2:qualifier2").thenAppendValue(ByteString.copyFromUtf8("value"))
             .read("family3:qualifier3").thenIncrementAmount(30);
     verifyReadModifyWriteRequest();
+
+    appendValue.execute();
+    appendValue.executeAsync();
 
     assertEquals(3, appendValue.getReadModifyWriteRequest().getRulesCount());
     assertEquals(ReadModifyWriteRule.getDefaultInstance(), appendValue.getReadModifyWriteRule().build());
@@ -163,8 +168,6 @@ public class BigtableReadModifyWriteImplTest {
     assertEquals(ByteString.EMPTY, rule.getAppendValue());
     assertEquals(30L, rule.getIncrementAmount());
 
-    appendValue.execute();
-    appendValue.executeAsync();
     verify(bigtableMock.getMockedDataClient()).readModifyWriteRow(appendValue.getReadModifyWriteRequest().build());
     verify(bigtableMock.getMockedDataClient()).readModifyWriteRowAsync(appendValue.getReadModifyWriteRequest().build());
     verifyNoMoreInteractions(bigtableMock.getMockedDataClient());

@@ -21,6 +21,7 @@ package com.spotify.bigtable;
 
 import com.google.cloud.bigtable.grpc.BigtableSession;
 import com.spotify.bigtable.mutate.BigtableMutation;
+import com.spotify.bigtable.mutate.BigtableMutationImpl;
 import com.spotify.bigtable.read.TableRead;
 import com.spotify.bigtable.readmodifywrite.BigtableReadModifyWrite;
 import com.spotify.bigtable.readmodifywrite.BigtableReadModifyWriteImpl;
@@ -81,7 +82,7 @@ public class Bigtable {
    * @return BigtableMutation
    */
   public BigtableMutation mutateRow(final String table, final String row) {
-    return new BigtableMutation.BigtableMutationImpl(this, table, row);
+    return new BigtableMutationImpl(this, table, row);
   }
 
   /**
