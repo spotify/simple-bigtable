@@ -1,4 +1,5 @@
-# Cloud Bigtable Client Wrapper Library
+# Cloud Bigtable Client
+[![Build Status](https://travis-ci.com/spotify/bigtable-client.svg?token=2JxpqAi9pfXo9AiMmByK&branch=master)](https://travis-ci.org/spotify/bigtable-client)
 
 ## Overview
 
