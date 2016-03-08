@@ -74,7 +74,7 @@ public abstract class AbstractBigtableRead<P, T> implements BigtableRead<T>, Big
    *
    * @param rowFilter row filter to add
    */
-  protected void addRowFilter(RowFilter.Builder rowFilter) {
+  protected void addRowFilter(final RowFilter.Builder rowFilter) {
     final RowFilter.Chain.Builder chain = readRequest.getFilter().getChain().toBuilder();
 
     if (chain.getFiltersCount() == 0) {

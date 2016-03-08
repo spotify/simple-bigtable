@@ -41,7 +41,7 @@ public interface FamiliesRead extends BigtableRead<List<Family>> {
     }
 
     @Override
-    protected List<Family> parentDataTypeToDataType(Optional<Row> row) {
+    protected List<Family> parentDataTypeToDataType(final Optional<Row> row) {
       return row.map(Row::getFamiliesList).orElse(Lists.newArrayList());
     }
   }

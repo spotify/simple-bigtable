@@ -48,41 +48,41 @@ public interface ColumnsRead extends BigtableRead<List<Column>> {
       super(row);
     }
 
-    public ColumnsReadImpl(Internal<Optional<Row>> row, RowFilter.Builder rowFilter) {
+    public ColumnsReadImpl(final Internal<Optional<Row>> row, final RowFilter.Builder rowFilter) {
       this(row);
       addRowFilter(rowFilter);
     }
 
     @Override
-    public ColumnsRead familyName(String familyName) {
+    public ColumnsRead familyName(final String familyName) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setFamilyName(familyName);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead startQualifierInclusive(ByteString startQualifierInclusive) {
+    public ColumnsRead startQualifierInclusive(final ByteString startQualifierInclusive) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierInclusive(startQualifierInclusive);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead startQualifierExclusive(ByteString startQualifierExclusive) {
+    public ColumnsRead startQualifierExclusive(final ByteString startQualifierExclusive) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierExclusive(startQualifierExclusive);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead endQualifierInclusive(ByteString endQualifierInclusive) {
+    public ColumnsRead endQualifierInclusive(final ByteString endQualifierInclusive) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierInclusive(endQualifierInclusive);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead endQualifierExclusive(ByteString endQualifierExclusive) {
+    public ColumnsRead endQualifierExclusive(final ByteString endQualifierExclusive) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierExclusive(endQualifierExclusive);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
@@ -96,7 +96,7 @@ public interface ColumnsRead extends BigtableRead<List<Column>> {
      * @return List of columns in response
      */
     @Override
-    protected List<Column> parentDataTypeToDataType(Optional<Row> rowOptional) {
+    protected List<Column> parentDataTypeToDataType(final Optional<Row> rowOptional) {
       return rowOptional.flatMap(row -> AbstractBigtableRead.headOption(row.getFamiliesList()))
               .map(Family::getColumnsList)
               .orElse(Lists.newArrayList());

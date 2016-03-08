@@ -46,17 +46,17 @@ public interface FamilyRead extends BigtableRead<Optional<Family>> {
     }
 
     @Override
-    protected Optional<Family> parentDataTypeToDataType(Optional<Row> row) {
+    protected Optional<Family> parentDataTypeToDataType(final Optional<Row> row) {
       return row.flatMap(r -> AbstractBigtableRead.headOption(r.getFamiliesList()));
     }
 
     @Override
-    public ColumnRead columnQualifier(String columnQualifier) {
+    public ColumnRead columnQualifier(final String columnQualifier) {
       return new ColumnRead.ColumnReadImpl(this, columnQualifier);
     }
 
     @Override
-    public ColumnsRead columnQualifierRegex(String columnQualifierRegex) {
+    public ColumnsRead columnQualifierRegex(final String columnQualifierRegex) {
       final ByteString columnRegexBytes = ByteString.copyFromUtf8(columnQualifierRegex);
       final RowFilter.Builder columnFilter = RowFilter.newBuilder().setColumnQualifierRegexFilter(columnRegexBytes);
 
@@ -73,7 +73,7 @@ public interface FamilyRead extends BigtableRead<Optional<Family>> {
     }
 
     @Override
-    public ColumnsRead columnsQualifiers(List<String> columnQualifiers) {
+    public ColumnsRead columnsQualifiers(final List<String> columnQualifiers) {
       return columnQualifierRegex(toExactMatchAnyRegex(columnQualifiers));
     }
   }

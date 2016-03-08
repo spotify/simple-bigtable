@@ -45,7 +45,7 @@ public interface ColumnRead extends BigtableRead<Optional<Column>> {
     }
 
     @Override
-    protected Optional<Column> parentDataTypeToDataType(Optional<Family> family) {
+    protected Optional<Column> parentDataTypeToDataType(final Optional<Family> family) {
       return family.flatMap(f -> AbstractBigtableRead.headOption(f.getColumnsList()));
     }
 

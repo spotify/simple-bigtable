@@ -83,55 +83,55 @@ public interface CellsRead extends BigtableRead<List<Cell>> {
     }
 
     @Override
-    public CellsRead limit(int limit) {
+    public CellsRead limit(final int limit) {
       final RowFilter.Builder limitFilter = RowFilter.newBuilder().setCellsPerColumnLimitFilter(limit);
       addRowFilter(limitFilter);
       return this;
     }
 
     @Override
-    public CellsRead startTimestampMicros(long startTimestampMicros) {
+    public CellsRead startTimestampMicros(final long startTimestampMicros) {
       final TimestampRange tsRange = TimestampRange.newBuilder().setStartTimestampMicros(startTimestampMicros).build();
       addRowFilter(RowFilter.newBuilder().setTimestampRangeFilter(tsRange));
       return this;
     }
 
     @Override
-    public CellsRead endTimestampMicros(long endTimestampMicros) {
+    public CellsRead endTimestampMicros(final long endTimestampMicros) {
       final TimestampRange tsRange = TimestampRange.newBuilder().setEndTimestampMicros(endTimestampMicros).build();
       addRowFilter(RowFilter.newBuilder().setTimestampRangeFilter(tsRange));
       return this;
     }
 
     @Override
-    public CellsRead valueRegex(ByteString valueRegex) {
+    public CellsRead valueRegex(final ByteString valueRegex) {
       addRowFilter(RowFilter.newBuilder().setValueRegexFilter(valueRegex));
       return this;
     }
 
     @Override
-    public CellsRead startValueInclusive(ByteString startValueInclusive) {
+    public CellsRead startValueInclusive(final ByteString startValueInclusive) {
       final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueInclusive(startValueInclusive);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
 
     @Override
-    public CellsRead startValueExclusive(ByteString startValueExclusive) {
+    public CellsRead startValueExclusive(final ByteString startValueExclusive) {
       final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueExclusive(startValueExclusive);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
 
     @Override
-    public CellsRead endValueInclusive(ByteString endValueInclusive) {
+    public CellsRead endValueInclusive(final ByteString endValueInclusive) {
       final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueInclusive(endValueInclusive);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
 
     @Override
-    public CellsRead endValueExclusive(ByteString endValueExclusive) {
+    public CellsRead endValueExclusive(final ByteString endValueExclusive) {
       final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueExclusive(endValueExclusive);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;

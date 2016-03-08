@@ -67,12 +67,12 @@ public interface RowRead extends BigtableRead<Optional<Row>> {
     }
 
     @Override
-    public FamiliesRead families(List<String> families) {
+    public FamiliesRead families(final List<String> families) {
       return familyRegex(toExactMatchAnyRegex(families));
     }
 
     @Override
-    public ColumnRead column(String column) {
+    public ColumnRead column(final String column) {
       final List<String> parts = Arrays.asList(column.split(":", 2));
       return family(parts.get(0)).columnQualifier(parts.get(1));
     }
@@ -90,7 +90,7 @@ public interface RowRead extends BigtableRead<Optional<Row>> {
      * @return ColumnsRead
      */
     @Override
-    public ColumnsRead columns(List<String> columns) {
+    public ColumnsRead columns(final List<String> columns) {
       final String columnFam = columns.get(0).split(":", 2)[0];
       final boolean allSameColumnFam = columns.stream()
               .allMatch(column -> columnFam.equals(column.split(":", 2)[0]));
