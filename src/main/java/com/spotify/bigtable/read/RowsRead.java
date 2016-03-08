@@ -19,14 +19,10 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v1.ReadRowsRequest;
 import com.google.bigtable.v1.Row;
 import com.google.bigtable.v1.RowRange;
-import com.google.cloud.bigtable.grpc.BigtableDataClient;
 import com.google.cloud.bigtable.grpc.scanner.ResultScanner;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.spotify.futures.FuturesExtra;
 
 import java.util.List;
 
@@ -42,28 +38,14 @@ public interface RowsRead extends BigtableRead<List<Row>> {
 
   ResultScanner<Row> execute();
 
-  class RowsReadImpl implements RowsRead, BigtableRead.Internal<List<Row>> {
-
-    private final TableRead.TableReadImpl tableRead;
-    private final ReadRowsRequest.Builder readRequest;
+  class RowsReadImpl extends AbstractBigtableRead<List<Row>, List<Row>> implements RowsRead {
 
     public RowsReadImpl(final TableRead.TableReadImpl tableRead) {
-      this.tableRead = tableRead;
-      this.readRequest = tableRead.readRequest();
+      super(tableRead);
     }
 
     @Override
-    public ReadRowsRequest.Builder readRequest() {
-      return readRequest;
-    }
-
-    @Override
-    public BigtableDataClient getClient() {
-      return tableRead.getClient();
-    }
-
-    @Override
-    public List<Row> toDataType(final List<Row> rows) {
+    protected List<Row> parentDataTypeToDataType(final List<Row> rows) {
       return rows;
     }
 
@@ -96,11 +78,6 @@ public interface RowsRead extends BigtableRead<List<Row>> {
     @Override
     public ResultScanner<Row> execute() {
       return getClient().readRows(readRequest().build());
-    }
-
-    @Override
-    public ListenableFuture<List<Row>> executeAsync() {
-      return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
     }
   }
 }

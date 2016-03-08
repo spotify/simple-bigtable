@@ -57,7 +57,7 @@ public interface TableRead {
     }
 
     @Override
-    public List<Row> toDataType(List<Row> rows) {
+    public List<Row> toDataType(final List<Row> rows) {
       return rows;
     }
   }

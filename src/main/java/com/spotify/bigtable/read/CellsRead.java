@@ -22,12 +22,9 @@ package com.spotify.bigtable.read;
 import com.google.api.client.util.Lists;
 import com.google.bigtable.v1.Cell;
 import com.google.bigtable.v1.Column;
-import com.google.bigtable.v1.ReadRowsRequest;
-import com.google.bigtable.v1.Row;
 import com.google.bigtable.v1.RowFilter;
 import com.google.bigtable.v1.TimestampRange;
 import com.google.bigtable.v1.ValueRange;
-import com.google.cloud.bigtable.grpc.BigtableDataClient;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
 import com.spotify.futures.FuturesExtra;
@@ -37,7 +34,7 @@ import java.util.Optional;
 
 public interface CellsRead extends BigtableRead<List<Cell>> {
 
-  CellsRead latest();
+  CellRead latest();
 
   CellsRead limit(final int limit);
 
@@ -55,32 +52,16 @@ public interface CellsRead extends BigtableRead<List<Cell>> {
 
   CellsRead endValueExclusive(final ByteString endValueExclusive);
 
-  class CellsReadImpl implements CellsRead, BigtableRead.Internal<List<Cell>> {
-
-    private final BigtableRead.Internal<Optional<Column>> column;
-    private final ReadRowsRequest.Builder readRequest;
+  class CellsReadImpl extends AbstractBigtableRead<Optional<Column>, List<Cell>> implements CellsRead {
 
     public CellsReadImpl(final BigtableRead.Internal<Optional<Column>> column) {
-      super();
-      this.column = column;
-      this.readRequest = ReadRowsRequest.newBuilder(column.readRequest().build());
+      super(column);
     }
 
     @Override
-    public ReadRowsRequest.Builder readRequest() {
-      return readRequest;
+    protected List<Cell> parentDataTypeToDataType(final Optional<Column> column) {
+      return column.map(Column::getCellsList).orElse(Lists.newArrayList());
     }
-
-    @Override
-    public BigtableDataClient getClient() {
-      return column.getClient();
-    }
-
-    @Override
-    public List<Cell> toDataType(List<Row> rows) {
-      return column.toDataType(rows).map(Column::getCellsList).orElse(Lists.newArrayList());
-    }
-
 
     @Override
     public ListenableFuture<List<Cell>> executeAsync() {
@@ -88,65 +69,71 @@ public interface CellsRead extends BigtableRead<List<Cell>> {
     }
 
     @Override
-    public CellsRead latest() {
-      column.readRequest().clear().mergeFrom(readRequest().build());
-      return new CellsReadImpl(column);
+    public CellRead latest() {
+      // In order to allow the parent read to be reused we do not want to add the filters to the parents readRequest
+      // Therefore we need to make sure the parent is unaltered. We probably should make a deep copy (hard to do
+      // with an interface) but this hacky solution works for now
+      final RowFilter oldFilter = parentRead.readRequest().getFilter();
+
+      parentRead.readRequest().setFilter(readRequest().getFilter());
+      final CellRead.CellReadImpl cellRead = new CellRead.CellReadImpl(parentRead);
+
+      parentRead.readRequest().setFilter(oldFilter);
+      return cellRead;
     }
 
     @Override
-    public CellsRead limit(int limit) {
-      final RowFilter limitFilter = RowFilter.newBuilder().setCellsPerColumnLimitFilter(limit).build();
-      readRequest.mergeFilter(limitFilter);
+    public CellsRead limit(final int limit) {
+      final RowFilter.Builder limitFilter = RowFilter.newBuilder().setCellsPerColumnLimitFilter(limit);
+      addRowFilter(limitFilter);
       return this;
     }
 
     @Override
-    public CellsRead startTimestampMicros(long startTimestampMicros) {
+    public CellsRead startTimestampMicros(final long startTimestampMicros) {
       final TimestampRange tsRange = TimestampRange.newBuilder().setStartTimestampMicros(startTimestampMicros).build();
-      final RowFilter limitFilter = RowFilter.newBuilder().setTimestampRangeFilter(tsRange).build();
-      readRequest.mergeFilter(limitFilter);
+      addRowFilter(RowFilter.newBuilder().setTimestampRangeFilter(tsRange));
       return this;
     }
 
     @Override
-    public CellsRead endTimestampMicros(long endTimestampMicros) {
+    public CellsRead endTimestampMicros(final long endTimestampMicros) {
       final TimestampRange tsRange = TimestampRange.newBuilder().setEndTimestampMicros(endTimestampMicros).build();
-      final RowFilter limitFilter = RowFilter.newBuilder().setTimestampRangeFilter(tsRange).build();
-      readRequest.mergeFilter(limitFilter);
+      addRowFilter(RowFilter.newBuilder().setTimestampRangeFilter(tsRange));
       return this;
     }
 
     @Override
-    public CellsRead valueRegex(ByteString valueRegex) {
-      readRequest.mergeFilter(RowFilter.newBuilder().setValueRegexFilter(valueRegex).build());
+    public CellsRead valueRegex(final ByteString valueRegex) {
+      addRowFilter(RowFilter.newBuilder().setValueRegexFilter(valueRegex));
       return this;
     }
 
     @Override
-    public CellsRead startValueInclusive(ByteString startValueInclusive) {
+    public CellsRead startValueInclusive(final ByteString startValueInclusive) {
       final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueInclusive(startValueInclusive);
-      readRequest.mergeFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange).build());
+      addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
 
     @Override
-    public CellsRead startValueExclusive(ByteString startValueExclusive) {
+    public CellsRead startValueExclusive(final ByteString startValueExclusive) {
       final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueExclusive(startValueExclusive);
-      readRequest.mergeFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange).build());
+      addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
 
     @Override
-    public CellsRead endValueInclusive(ByteString endValueInclusive) {
+    public CellsRead endValueInclusive(final ByteString endValueInclusive) {
       final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueInclusive(endValueInclusive);
-      readRequest.mergeFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange).build());
+      addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
 
     @Override
-    public CellsRead endValueExclusive(ByteString endValueExclusive) {
+    public CellsRead endValueExclusive(final ByteString endValueExclusive) {
       final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueExclusive(endValueExclusive);
-      readRequest.mergeFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange).build());
+      addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
   }

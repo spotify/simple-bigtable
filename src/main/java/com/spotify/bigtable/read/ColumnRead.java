@@ -21,17 +21,9 @@ package com.spotify.bigtable.read;
 
 import com.google.bigtable.v1.Column;
 import com.google.bigtable.v1.Family;
-import com.google.bigtable.v1.ReadRowsRequest;
-import com.google.bigtable.v1.Row;
 import com.google.bigtable.v1.RowFilter;
-import com.google.cloud.bigtable.grpc.BigtableDataClient;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.spotify.bigtable.BigtableColumn;
-import com.spotify.bigtable.Util;
-import com.spotify.futures.FuturesExtra;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface ColumnRead extends BigtableRead<Optional<Column>> {
@@ -40,35 +32,19 @@ public interface ColumnRead extends BigtableRead<Optional<Column>> {
 
   CellsRead cells();
 
-  class ColumnReadImpl extends BigtableColumn implements ColumnRead, BigtableRead.Internal<Optional<Column>> {
-
-    private final BigtableRead.Internal<Optional<Family>> family;
+  class ColumnReadImpl extends AbstractBigtableRead<Optional<Family>, Optional<Column>> implements ColumnRead {
 
     public ColumnReadImpl(final BigtableRead.Internal<Optional<Family>> family, final String columnQualifier) {
-      super(columnQualifier);
-      this.family = family;
+      super(family);
+
+      final RowFilter.Builder qualifierFilter = RowFilter.newBuilder()
+              .setColumnQualifierRegexFilter(ByteString.copyFromUtf8(toExactMatchRegex(columnQualifier)));
+      addRowFilter(qualifierFilter);
     }
 
     @Override
-    public ReadRowsRequest.Builder readRequest() {
-      final RowFilter familyFilter = RowFilter.newBuilder()
-              .setColumnQualifierRegexFilter(ByteString.copyFromUtf8(Util.toExactMatchRegex(columnQualifier))).build();
-      return family.readRequest().mergeFilter(familyFilter);
-    }
-
-    @Override
-    public BigtableDataClient getClient() {
-      return family.getClient();
-    }
-
-    @Override
-    public Optional<Column> toDataType(final List<Row> rows) {
-      return family.toDataType(rows).flatMap(family -> Util.headOption(family.getColumnsList()));
-    }
-
-    @Override
-    public ListenableFuture<Optional<Column>> executeAsync() {
-      return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
+    protected Optional<Column> parentDataTypeToDataType(final Optional<Family> family) {
+      return family.flatMap(f -> AbstractBigtableRead.headOption(f.getColumnsList()));
     }
 
     @Override

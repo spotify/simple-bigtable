@@ -23,18 +23,12 @@ import com.google.api.client.util.Lists;
 import com.google.bigtable.v1.Column;
 import com.google.bigtable.v1.ColumnRange;
 import com.google.bigtable.v1.Family;
-import com.google.bigtable.v1.ReadRowsRequest;
 import com.google.bigtable.v1.Row;
 import com.google.bigtable.v1.RowFilter;
-import com.google.cloud.bigtable.grpc.BigtableDataClient;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.spotify.futures.FuturesExtra;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public interface ColumnsRead extends BigtableRead<List<Column>> {
 
@@ -48,79 +42,64 @@ public interface ColumnsRead extends BigtableRead<List<Column>> {
 
   public ColumnsRead endQualifierExclusive(final ByteString endQualifierExclusive);
 
-  class ColumnsReadImpl implements ColumnsRead, BigtableRead.Internal<List<Column>> {
-
-    private final BigtableRead.Internal<Optional<Row>> row;
-    private final ReadRowsRequest.Builder readRequest;
+  class ColumnsReadImpl extends AbstractBigtableRead<Optional<Row>, List<Column>> implements ColumnsRead {
 
     public ColumnsReadImpl(final BigtableRead.Internal<Optional<Row>> row) {
-      this.row = row;
-      this.readRequest = ReadRowsRequest.newBuilder(row.readRequest().build());
+      super(row);
     }
 
-    public ColumnsReadImpl(final BigtableRead.Internal<Optional<Row>> row, final ReadRowsRequest.Builder readRequest) {
-      this.row = row;
-      this.readRequest = readRequest;
+    public ColumnsReadImpl(final Internal<Optional<Row>> row, final RowFilter.Builder rowFilter) {
+      this(row);
+      addRowFilter(rowFilter);
     }
 
     @Override
-    public ColumnsRead familyName(String familyName) {
+    public ColumnsRead familyName(final String familyName) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setFamilyName(familyName);
-      readRequest.mergeFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange).build());
+      addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead startQualifierInclusive(ByteString startQualifierInclusive) {
+    public ColumnsRead startQualifierInclusive(final ByteString startQualifierInclusive) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierInclusive(startQualifierInclusive);
-      readRequest.mergeFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange).build());
+      addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead startQualifierExclusive(ByteString startQualifierExclusive) {
+    public ColumnsRead startQualifierExclusive(final ByteString startQualifierExclusive) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierExclusive(startQualifierExclusive);
-      readRequest.mergeFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange).build());
+      addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead endQualifierInclusive(ByteString endQualifierInclusive) {
+    public ColumnsRead endQualifierInclusive(final ByteString endQualifierInclusive) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierInclusive(endQualifierInclusive);
-      readRequest.mergeFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange).build());
+      addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead endQualifierExclusive(ByteString endQualifierExclusive) {
+    public ColumnsRead endQualifierExclusive(final ByteString endQualifierExclusive) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierExclusive(endQualifierExclusive);
-      readRequest.mergeFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange).build());
+      addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
+    /**
+     * Converts parent data type to return data type.
+     *
+     * Right now all columns must be in the same column family.
+     * @param rowOptional Row Optional
+     * @return List of columns in response
+     */
     @Override
-    public ReadRowsRequest.Builder readRequest() {
-      return readRequest;
-    }
-
-    @Override
-    public BigtableDataClient getClient() {
-      return row.getClient();
-    }
-
-    @Override
-    public List<Column> toDataType(List<Row> rows) {
-      return row.toDataType(rows).map(row ->
-                      row.getFamiliesList().stream()
-                              .map(Family::getColumnsList)
-                              .flatMap(Collection::stream)
-                              .collect(Collectors.toList())
-      ).orElse(Lists.newArrayList());
-    }
-
-    @Override
-    public ListenableFuture<List<Column>> executeAsync() {
-      return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
+    protected List<Column> parentDataTypeToDataType(final Optional<Row> rowOptional) {
+      return rowOptional.flatMap(row -> AbstractBigtableRead.headOption(row.getFamiliesList()))
+              .map(Family::getColumnsList)
+              .orElse(Lists.newArrayList());
     }
   }
 }

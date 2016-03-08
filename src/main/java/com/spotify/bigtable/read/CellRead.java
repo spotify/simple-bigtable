@@ -21,48 +21,24 @@ package com.spotify.bigtable.read;
 
 import com.google.bigtable.v1.Cell;
 import com.google.bigtable.v1.Column;
-import com.google.bigtable.v1.ReadRowsRequest;
-import com.google.bigtable.v1.Row;
 import com.google.bigtable.v1.RowFilter;
-import com.google.cloud.bigtable.grpc.BigtableDataClient;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.spotify.bigtable.Util;
-import com.spotify.futures.FuturesExtra;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface CellRead extends BigtableRead<Optional<Cell>> {
 
-  class CellReadImpl implements CellRead, BigtableRead.Internal<Optional<Cell>> {
-
-    private final BigtableRead.Internal<Optional<Column>> column;
+  class CellReadImpl extends AbstractBigtableRead<Optional<Column>, Optional<Cell>> implements CellRead {
 
     public CellReadImpl(final BigtableRead.Internal<Optional<Column>> column) {
-      super();
-      this.column = column;
+      super(column);
+
+      final RowFilter.Builder cellFilter = RowFilter.newBuilder().setCellsPerColumnLimitFilter(1);
+      addRowFilter(cellFilter);
     }
 
     @Override
-    public ReadRowsRequest.Builder readRequest() {
-      final RowFilter cellFilter = RowFilter.newBuilder().setCellsPerColumnLimitFilter(1).build();
-      return column.readRequest().mergeFilter(cellFilter);
-    }
-
-    @Override
-    public BigtableDataClient getClient() {
-      return column.getClient();
-    }
-
-    @Override
-    public Optional<Cell> toDataType(List<Row> rows) {
-      return column.toDataType(rows).flatMap(column -> Util.headOption(column.getCellsList()));
-    }
-
-
-    @Override
-    public ListenableFuture<Optional<Cell>> executeAsync() {
-      return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
+    protected Optional<Cell> parentDataTypeToDataType(final Optional<Column> column) {
+      return column.flatMap(c -> AbstractBigtableRead.headOption(c.getCellsList()));
     }
   }
 }
