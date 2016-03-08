@@ -62,6 +62,7 @@ public class FamilyReadImplTest {
     assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().getChain().getFilters(0));
     assertEquals(toExactMatchRegex("family"), readRequest.getFilter().getChain().getFilters(1).getFamilyNameRegexFilter());
   }
+
   @Test
   public void testGetClient() throws Exception {
     assertEquals(bigtableMock.getMockedDataClient(), familyRead.getClient());

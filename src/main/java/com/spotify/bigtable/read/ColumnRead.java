@@ -22,9 +22,7 @@ package com.spotify.bigtable.read;
 import com.google.bigtable.v1.Column;
 import com.google.bigtable.v1.Family;
 import com.google.bigtable.v1.RowFilter;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.spotify.futures.FuturesExtra;
 
 import java.util.Optional;
 
@@ -47,11 +45,6 @@ public interface ColumnRead extends BigtableRead<Optional<Column>> {
     @Override
     protected Optional<Column> parentDataTypeToDataType(final Optional<Family> family) {
       return family.flatMap(f -> AbstractBigtableRead.headOption(f.getColumnsList()));
-    }
-
-    @Override
-    public ListenableFuture<Optional<Column>> executeAsync() {
-      return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
     }
 
     @Override
