@@ -19,15 +19,9 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v1.ReadRowsRequest;
 import com.google.bigtable.v1.Row;
 import com.google.bigtable.v1.RowFilter;
-import com.google.cloud.bigtable.grpc.BigtableDataClient;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.spotify.bigtable.BigtableRow;
-import com.spotify.bigtable.Util;
-import com.spotify.futures.FuturesExtra;
 
 import java.util.Arrays;
 import java.util.List;
@@ -48,28 +42,17 @@ public interface RowRead extends BigtableRead<Optional<Row>> {
 
   ColumnsRead columns(final List<String> columns);
 
-  class RowReadImpl extends BigtableRow implements RowRead, BigtableRead.Internal<Optional<Row>> {
-
-    private final TableRead.TableReadImpl tableRead;
+  class RowReadImpl extends AbstractBigtableRead<List<Row>, Optional<Row>> implements RowRead {
 
     public RowReadImpl(final TableRead.TableReadImpl tableRead, final String row) {
-      super(tableRead, row);
-      this.tableRead = tableRead;
+      super(tableRead);
+      readRequest.setRowKey(ByteString.copyFromUtf8(row));
+      readRequest.setNumRowsLimit(1);
     }
 
     @Override
-    public ReadRowsRequest.Builder readRequest() {
-      return tableRead.readRequest().setRowKey(ByteString.copyFromUtf8(row)).setNumRowsLimit(1);
-    }
-
-    @Override
-    public BigtableDataClient getClient() {
-      return tableRead.getClient();
-    }
-
-    @Override
-    public Optional<Row> toDataType(final List<Row> rows) {
-      return Util.headOption(rows);
+    protected Optional<Row> parentDataTypeToDataType(final List<Row> rows) {
+      return AbstractBigtableRead.headOption(rows);
     }
 
     @Override
@@ -79,16 +62,13 @@ public interface RowRead extends BigtableRead<Optional<Row>> {
 
     @Override
     public FamiliesRead familyRegex(final String columnFamilyRegex) {
-      final ReadRowsRequest.Builder readRequest = readRequest();
-      final RowFilter.Builder familyFilter = RowFilter.newBuilder()
-              .setFamilyNameRegexFilter(Util.toExactMatchRegex(columnFamilyRegex));
-      readRequest.mergeFilter(familyFilter.build());
-      return new FamiliesRead.FamiliesReadImpl(this, readRequest);
+      final RowFilter.Builder familyFilter = RowFilter.newBuilder().setFamilyNameRegexFilter(columnFamilyRegex);
+      return new FamiliesRead.FamiliesReadImpl(this, familyFilter);
     }
 
     @Override
     public FamiliesRead families(List<String> families) {
-      return familyRegex(Util.toExactMatchAnyRegex(families));
+      return familyRegex(toExactMatchAnyRegex(families));
     }
 
     @Override
@@ -123,11 +103,5 @@ public interface RowRead extends BigtableRead<Optional<Row>> {
               .collect(Collectors.toList());
       return family(columnFam).columnsQualifiers(qualifiers);
     }
-
-    @Override
-    public ListenableFuture<Optional<Row>> executeAsync() {
-      return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
-    }
-
   }
 }

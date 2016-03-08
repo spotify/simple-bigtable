@@ -20,15 +20,9 @@
 package com.spotify.bigtable.read;
 
 import com.google.bigtable.v1.Family;
-import com.google.bigtable.v1.ReadRowsRequest;
 import com.google.bigtable.v1.Row;
 import com.google.bigtable.v1.RowFilter;
-import com.google.cloud.bigtable.grpc.BigtableDataClient;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.spotify.bigtable.BigtableFamily;
-import com.spotify.bigtable.Util;
-import com.spotify.futures.FuturesExtra;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,35 +35,19 @@ public interface FamilyRead extends BigtableRead<Optional<Family>> {
 
   ColumnsRead columnsQualifiers(final List<String> columnQualifiers);
 
-  class FamilyReadImpl extends BigtableFamily implements FamilyRead, BigtableRead.Internal<Optional<Family>> {
-
-    private final BigtableRead.Internal<Optional<Row>> row;
+  class FamilyReadImpl extends AbstractBigtableRead<Optional<Row>, Optional<Family>> implements FamilyRead {
 
     public FamilyReadImpl(final BigtableRead.Internal<Optional<Row>> row, final String columnFamily) {
-      super(columnFamily);
-      this.row = row;
+      super(row);
+
+      final RowFilter.Builder familyFilter = RowFilter.newBuilder()
+              .setFamilyNameRegexFilter(toExactMatchRegex(columnFamily));
+      addRowFilter(familyFilter);
     }
 
     @Override
-    public ReadRowsRequest.Builder readRequest() {
-      final RowFilter familyFilter = RowFilter.newBuilder()
-              .setFamilyNameRegexFilter(Util.toExactMatchRegex(columnFamily)).build();
-      return row.readRequest().mergeFilter(familyFilter);
-    }
-
-    @Override
-    public BigtableDataClient getClient() {
-      return row.getClient();
-    }
-
-    @Override
-    public Optional<Family> toDataType(List<Row> rows) {
-      return  row.toDataType(rows).flatMap(row -> Util.headOption(row.getFamiliesList()));
-    }
-
-    @Override
-    public ListenableFuture<Optional<Family>> executeAsync() {
-      return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
+    protected Optional<Family> parentDataTypeToDataType(Optional<Row> row) {
+      return row.flatMap(r -> AbstractBigtableRead.headOption(r.getFamiliesList()));
     }
 
     @Override
@@ -79,16 +57,24 @@ public interface FamilyRead extends BigtableRead<Optional<Family>> {
 
     @Override
     public ColumnsRead columnQualifierRegex(String columnQualifierRegex) {
-      final ReadRowsRequest.Builder readRequest = ReadRowsRequest.newBuilder(readRequest().build());
       final ByteString columnRegexBytes = ByteString.copyFromUtf8(columnQualifierRegex);
       final RowFilter.Builder columnFilter = RowFilter.newBuilder().setColumnQualifierRegexFilter(columnRegexBytes);
-      readRequest.mergeFilter(columnFilter.build());
-      return new ColumnsRead.ColumnsReadImpl(row, readRequest);
+
+      // In order to allow the parent read to be reused we do not want to add the filters to the parents readRequest
+      // Therefore we need to make sure the parent is unaltered. We probably should make a deep copy (hard to do
+      // with an interface) but this hacky solution works for now
+      final RowFilter oldFilter = parentRead.readRequest().getFilter();
+
+      parentRead.readRequest().setFilter(readRequest().getFilter());
+      final ColumnsRead.ColumnsReadImpl columnsRead = new ColumnsRead.ColumnsReadImpl(parentRead, columnFilter);
+
+      parentRead.readRequest().setFilter(oldFilter);
+      return columnsRead;
     }
 
     @Override
     public ColumnsRead columnsQualifiers(List<String> columnQualifiers) {
-      return columnQualifierRegex(Util.toExactMatchAnyRegex(columnQualifiers));
+      return columnQualifierRegex(toExactMatchAnyRegex(columnQualifiers));
     }
   }
 }

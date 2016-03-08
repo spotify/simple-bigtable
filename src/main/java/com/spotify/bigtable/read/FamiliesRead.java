@@ -21,50 +21,28 @@ package com.spotify.bigtable.read;
 
 import com.google.api.client.util.Lists;
 import com.google.bigtable.v1.Family;
-import com.google.bigtable.v1.ReadRowsRequest;
 import com.google.bigtable.v1.Row;
-import com.google.cloud.bigtable.grpc.BigtableDataClient;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.spotify.futures.FuturesExtra;
+import com.google.bigtable.v1.RowFilter;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface FamiliesRead extends BigtableRead<List<Family>> {
 
-  class FamiliesReadImpl implements FamiliesRead, BigtableRead.Internal<List<Family>> {
-
-    private final BigtableRead.Internal<Optional<Row>> row;
-    private final ReadRowsRequest.Builder readRequest;
+  class FamiliesReadImpl extends AbstractBigtableRead<Optional<Row>, List<Family>> implements FamiliesRead {
 
     public FamiliesReadImpl(final BigtableRead.Internal<Optional<Row>> row) {
-      this.row = row;
-      this.readRequest = row.readRequest();
+      super(row);
     }
 
-    public FamiliesReadImpl(final BigtableRead.Internal<Optional<Row>> row, final ReadRowsRequest.Builder readRequest) {
-      this.row = row;
-      this.readRequest = readRequest;
-    }
-
-    @Override
-    public ReadRowsRequest.Builder readRequest() {
-      return readRequest;
+    public FamiliesReadImpl(final BigtableRead.Internal<Optional<Row>> row, final RowFilter.Builder rowFilter) {
+      this(row);
+      addRowFilter(rowFilter);
     }
 
     @Override
-    public BigtableDataClient getClient() {
-      return row.getClient();
-    }
-
-    @Override
-    public List<Family> toDataType(final List<Row> rows) {
-      return row.toDataType(rows).map(Row::getFamiliesList).orElse(Lists.newArrayList());
-    }
-
-    @Override
-    public ListenableFuture<List<Family>> executeAsync() {
-      return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
+    protected List<Family> parentDataTypeToDataType(Optional<Row> row) {
+      return row.map(Row::getFamiliesList).orElse(Lists.newArrayList());
     }
   }
 
