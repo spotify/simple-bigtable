@@ -25,6 +25,7 @@ import com.google.bigtable.v1.Row;
 import com.google.bigtable.v1.RowFilter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
+import com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,27 +94,51 @@ public class FamilyReadImplTest {
 
   @Test
   public void testColumnQualifier() throws Exception {
-    final ColumnRead.ColumnReadImpl read = (ColumnRead.ColumnReadImpl) familyRead.columnQualifier("qualifier");
+    ColumnRead.ColumnReadImpl read = (ColumnRead.ColumnReadImpl) familyRead.columnQualifier("qualifier");
 
-    final ReadRowsRequest.Builder readRequest = read.readRequest();
+    ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
 
-    final RowFilter.Chain chain = readRequest.getFilter().getChain();
+    RowFilter.Chain chain = readRequest.getFilter().getChain();
     assertEquals(3, chain.getFiltersCount());
     assertEquals(toExactMatchRegex("qualifier"), chain.getFilters(2).getColumnQualifierRegexFilter().toStringUtf8());
+    assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().toBuilder().clearChain().build());
+
+    read = (ColumnRead.ColumnReadImpl) familyRead.columnQualifier(ByteString.copyFromUtf8("qualifier"));
+
+    readRequest = read.readRequest();
+    verifyReadRequest(readRequest);
+
+    chain = readRequest.getFilter().getChain();
+    assertEquals(3, chain.getFiltersCount());
+    assertEquals(ByteString.copyFromUtf8("qualifier"), chain.getFilters(2).getColumnQualifierRegexFilter());
     assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().toBuilder().clearChain().build());
   }
 
   @Test
   public void testColumnQualifierRegex() throws Exception {
-    final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) familyRead.columnQualifierRegex("regex");
+    ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) familyRead.columnQualifierRegex("regex");
 
-    final ReadRowsRequest.Builder readRequest = read.readRequest();
+    ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
 
-    final RowFilter.Chain chain = readRequest.getFilter().getChain();
+    RowFilter.Chain chain = readRequest.getFilter().getChain();
     assertEquals(3, chain.getFiltersCount());
     assertEquals("regex", chain.getFilters(2).getColumnQualifierRegexFilter().toStringUtf8());
+    assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().toBuilder().clearChain().build());
+
+    // Need to make sure that the FamilyRead (ColumnsRead's parent) did not get the filters added as well.
+    // This is necessary to reuse the objects.
+    assertEquals(2, familyRead.readRequest().getFilter().getChain().getFiltersCount());
+
+    read = (ColumnsRead.ColumnsReadImpl) familyRead.columnQualifierRegex(ByteString.copyFromUtf8("regex"));
+
+    readRequest = read.readRequest();
+    verifyReadRequest(readRequest);
+
+    chain = readRequest.getFilter().getChain();
+    assertEquals(3, chain.getFiltersCount());
+    assertEquals(ByteString.copyFromUtf8("regex"), chain.getFilters(2).getColumnQualifierRegexFilter());
     assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().toBuilder().clearChain().build());
 
     // Need to make sure that the FamilyRead (ColumnsRead's parent) did not get the filters added as well.

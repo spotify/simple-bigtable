@@ -32,15 +32,17 @@ import java.util.Optional;
 
 public interface ColumnsRead extends BigtableRead<List<Column>> {
 
-  public ColumnsRead familyName(final String familyName);
+  ColumnsRead familyName(final ByteString familyNameBytes);
 
-  public ColumnsRead startQualifierInclusive(final ByteString startQualifierInclusive);
+  ColumnsRead familyName(final String familyName);
 
-  public ColumnsRead startQualifierExclusive(final ByteString startQualifierExclusive);
+  ColumnsRead startQualifierInclusive(final ByteString startQualifierInclusive);
 
-  public ColumnsRead endQualifierInclusive(final ByteString endQualifierInclusive);
+  ColumnsRead startQualifierExclusive(final ByteString startQualifierExclusive);
 
-  public ColumnsRead endQualifierExclusive(final ByteString endQualifierExclusive);
+  ColumnsRead endQualifierInclusive(final ByteString endQualifierInclusive);
+
+  ColumnsRead endQualifierExclusive(final ByteString endQualifierExclusive);
 
   class ColumnsReadImpl extends AbstractBigtableRead<Optional<Row>, List<Column>> implements ColumnsRead {
 
@@ -54,10 +56,15 @@ public interface ColumnsRead extends BigtableRead<List<Column>> {
     }
 
     @Override
-    public ColumnsRead familyName(final String familyName) {
-      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setFamilyName(familyName);
+    public ColumnsRead familyName(final ByteString familyNameBytes) {
+      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setFamilyNameBytes(familyNameBytes);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
+    }
+
+    @Override
+    public ColumnsRead familyName(final String familyName) {
+      return familyName(ByteString.copyFromUtf8(familyName));
     }
 
     @Override

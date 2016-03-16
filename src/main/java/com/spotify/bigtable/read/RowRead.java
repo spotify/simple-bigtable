@@ -30,7 +30,11 @@ import java.util.stream.Collectors;
 
 public interface RowRead extends BigtableRead<Optional<Row>> {
 
+  FamilyRead family(final ByteString columnFamilyBytes);
+
   FamilyRead family(final String columnFamily);
+
+  FamiliesRead familyRegex(final ByteString columnFamilyRegexBytes);
 
   FamiliesRead familyRegex(final String columnFamilyRegex);
 
@@ -44,10 +48,14 @@ public interface RowRead extends BigtableRead<Optional<Row>> {
 
   class RowReadImpl extends AbstractBigtableRead<List<Row>, Optional<Row>> implements RowRead {
 
-    public RowReadImpl(final TableRead.TableReadImpl tableRead, final String row) {
+    public RowReadImpl(final TableRead.TableReadImpl tableRead, final ByteString row) {
       super(tableRead);
-      readRequest.setRowKey(ByteString.copyFromUtf8(row));
+      readRequest.setRowKey(row);
       readRequest.setNumRowsLimit(1);
+    }
+
+    public RowReadImpl(final TableRead.TableReadImpl tableRead, final String row) {
+      this(tableRead, ByteString.copyFromUtf8(row));
     }
 
     @Override
@@ -56,14 +64,25 @@ public interface RowRead extends BigtableRead<Optional<Row>> {
     }
 
     @Override
+    public FamilyRead family(final ByteString columnFamilyBytes) {
+      return new FamilyRead.FamilyReadImpl(this, columnFamilyBytes);
+    }
+
+    @Override
     public FamilyRead family(final String columnFamily) {
       return new FamilyRead.FamilyReadImpl(this, columnFamily);
     }
 
     @Override
-    public FamiliesRead familyRegex(final String columnFamilyRegex) {
-      final RowFilter.Builder familyFilter = RowFilter.newBuilder().setFamilyNameRegexFilter(columnFamilyRegex);
+    public FamiliesRead familyRegex(final ByteString columnFamilyRegexBytes) {
+      final RowFilter.Builder familyFilter = RowFilter.newBuilder()
+              .setFamilyNameRegexFilterBytes(columnFamilyRegexBytes);
       return new FamiliesRead.FamiliesReadImpl(this, familyFilter);
+    }
+
+    @Override
+    public FamiliesRead familyRegex(final String columnFamilyRegex) {
+      return familyRegex(ByteString.copyFromUtf8(columnFamilyRegex));
     }
 
     @Override

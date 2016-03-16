@@ -21,6 +21,7 @@ package com.spotify.bigtable.read;
 
 import com.google.bigtable.v1.Row;
 import com.google.common.collect.ImmutableList;
+import com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +46,11 @@ public class TableReadImplTest {
     assertEquals("row", row.readRequest().getRowKey().toStringUtf8());
     assertEquals(1, row.readRequest().getNumRowsLimit());
     assertEquals(bigtableMock.getMockedDataClient(), row.getClient());
+
+    final RowRead.RowReadImpl rowFromBytes = (RowRead.RowReadImpl) tableRead.row(ByteString.copyFromUtf8("row"));
+    assertEquals(row.readRequest().getRowKey().toStringUtf8(), rowFromBytes.readRequest().getRowKey().toStringUtf8());
+    assertEquals(row.readRequest().getNumRowsLimit(), rowFromBytes.readRequest().getNumRowsLimit());
+    assertEquals(row.getClient(), rowFromBytes.getClient());
   }
 
   @Test

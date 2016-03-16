@@ -25,6 +25,7 @@ import com.google.bigtable.v1.RowFilter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
+import com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,21 +83,39 @@ public class RowReadImplTest {
 
   @Test
   public void testFamily() throws Exception {
-    final FamilyRead.FamilyReadImpl family = (FamilyRead.FamilyReadImpl) rowRead.family("family");
+    FamilyRead.FamilyReadImpl family = (FamilyRead.FamilyReadImpl) rowRead.family("family");
 
-    final ReadRowsRequest.Builder readRequest = family.readRequest();
+    ReadRowsRequest.Builder readRequest = family.readRequest();
     verifyReadRequest(readRequest);
     assertEquals(2, readRequest.getFilter().getChain().getFiltersCount());
     assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().getChain().getFilters(0));
     assertEquals(AbstractBigtableRead.toExactMatchRegex("family"), readRequest.getFilter().getChain().getFilters(1).getFamilyNameRegexFilter());
     assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().toBuilder().clearChain().build());
+
+    family = (FamilyRead.FamilyReadImpl) rowRead.family(ByteString.copyFromUtf8("family"));
+
+    readRequest = family.readRequest();
+    verifyReadRequest(readRequest);
+    assertEquals(2, readRequest.getFilter().getChain().getFiltersCount());
+    assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().getChain().getFilters(0));
+    assertEquals(ByteString.copyFromUtf8("family"), readRequest.getFilter().getChain().getFilters(1).getFamilyNameRegexFilterBytes());
+    assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().toBuilder().clearChain().build());
   }
 
   @Test
   public void testFamilyRegex() throws Exception {
-    final FamiliesRead.FamiliesReadImpl families = (FamiliesRead.FamiliesReadImpl) rowRead.familyRegex("family-regex");
+    FamiliesRead.FamiliesReadImpl families = (FamiliesRead.FamiliesReadImpl) rowRead.familyRegex("family-regex");
 
-    final ReadRowsRequest.Builder readRequest = families.readRequest();
+    ReadRowsRequest.Builder readRequest = families.readRequest();
+    verifyReadRequest(readRequest);
+    assertEquals(2, readRequest.getFilter().getChain().getFiltersCount());
+    assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().getChain().getFilters(0));
+    assertEquals("family-regex", readRequest.getFilter().getChain().getFilters(1).getFamilyNameRegexFilter());
+    assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().toBuilder().clearChain().build());
+
+    families = (FamiliesRead.FamiliesReadImpl) rowRead.familyRegex(ByteString.copyFromUtf8("family-regex"));
+
+    readRequest = families.readRequest();
     verifyReadRequest(readRequest);
     assertEquals(2, readRequest.getFilter().getChain().getFiltersCount());
     assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().getChain().getFilters(0));

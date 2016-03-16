@@ -29,7 +29,11 @@ import java.util.Optional;
 
 public interface FamilyRead extends BigtableRead<Optional<Family>> {
 
+  ColumnRead columnQualifier(final ByteString columnQualifierBytes);
+
   ColumnRead columnQualifier(final String columnQualifier);
+
+  ColumnsRead columnQualifierRegex(final ByteString columnQualifierRegexBytes);
 
   ColumnsRead columnQualifierRegex(final String columnQualifierRegex);
 
@@ -37,12 +41,16 @@ public interface FamilyRead extends BigtableRead<Optional<Family>> {
 
   class FamilyReadImpl extends AbstractBigtableRead<Optional<Row>, Optional<Family>> implements FamilyRead {
 
-    public FamilyReadImpl(final BigtableRead.Internal<Optional<Row>> row, final String columnFamily) {
+    public FamilyReadImpl(final BigtableRead.Internal<Optional<Row>> row, final ByteString columnFamilyBytes) {
       super(row);
 
       final RowFilter.Builder familyFilter = RowFilter.newBuilder()
-              .setFamilyNameRegexFilter(toExactMatchRegex(columnFamily));
+              .setFamilyNameRegexFilterBytes(columnFamilyBytes);
       addRowFilter(familyFilter);
+    }
+
+    public FamilyReadImpl(final BigtableRead.Internal<Optional<Row>> row, final String columnFamily) {
+      this(row, ByteString.copyFromUtf8(toExactMatchRegex(columnFamily)));
     }
 
     @Override
@@ -51,14 +59,19 @@ public interface FamilyRead extends BigtableRead<Optional<Family>> {
     }
 
     @Override
+    public ColumnRead columnQualifier(final ByteString columnQualifierBytes) {
+      return new ColumnRead.ColumnReadImpl(this, columnQualifierBytes);
+    }
+
+    @Override
     public ColumnRead columnQualifier(final String columnQualifier) {
       return new ColumnRead.ColumnReadImpl(this, columnQualifier);
     }
 
     @Override
-    public ColumnsRead columnQualifierRegex(final String columnQualifierRegex) {
-      final ByteString columnRegexBytes = ByteString.copyFromUtf8(columnQualifierRegex);
-      final RowFilter.Builder columnFilter = RowFilter.newBuilder().setColumnQualifierRegexFilter(columnRegexBytes);
+    public ColumnsRead columnQualifierRegex(final ByteString columnQualifierRegexBytes) {
+      final RowFilter.Builder columnFilter = RowFilter.newBuilder()
+              .setColumnQualifierRegexFilter(columnQualifierRegexBytes);
 
       // In order to allow the parent read to be reused we do not want to add the filters to the parents readRequest
       // Therefore we need to make sure the parent is unaltered. We probably should make a deep copy (hard to do
@@ -70,6 +83,11 @@ public interface FamilyRead extends BigtableRead<Optional<Family>> {
 
       parentRead.readRequest().setFilter(oldFilter);
       return columnsRead;
+    }
+
+    @Override
+    public ColumnsRead columnQualifierRegex(final String columnQualifierRegex) {
+      return columnQualifierRegex(ByteString.copyFromUtf8(columnQualifierRegex));
     }
 
     @Override
