@@ -22,12 +22,15 @@ package com.spotify.bigtable.read;
 import com.google.bigtable.v1.ReadRowsRequest;
 import com.google.bigtable.v1.Row;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
+import com.google.protobuf.ByteString;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
 
 import java.util.List;
 
 public interface TableRead {
+
+  RowRead row(final ByteString row);
 
   RowRead row(final String row);
 
@@ -37,6 +40,10 @@ public interface TableRead {
 
     public TableReadImpl(final Bigtable bigtable, final String table) {
       super(bigtable, table);
+    }
+
+    public RowRead row(final ByteString rowBytes) {
+      return new RowRead.RowReadImpl(this, rowBytes);
     }
 
     public RowRead row(final String row) {

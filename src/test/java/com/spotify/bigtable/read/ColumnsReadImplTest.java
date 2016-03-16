@@ -105,6 +105,21 @@ public class ColumnsReadImplTest {
   }
 
   @Test
+  public void testFamilyNameBytes() throws Exception {
+    final ColumnRange columnRange = ColumnRange.newBuilder().setFamilyNameBytes(ByteString.copyFromUtf8("family")).build();
+    final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) this.columnsRead
+            .familyName(columnRange.getFamilyName());
+
+    final ReadRowsRequest.Builder readRequest = read.readRequest();
+    verifyReadRequest(readRequest);
+
+    final RowFilter.Chain chain = readRequest.getFilter().getChain();
+    assertEquals(2, chain.getFiltersCount());
+    assertEquals(RowFilter.getDefaultInstance(), chain.getFilters(0));
+    assertEquals(columnRange, chain.getFilters(1).getColumnRangeFilter());
+  }
+
+  @Test
   public void testStartQualifierInclusive() throws Exception {
     final ColumnRange columnRange = ColumnRange.newBuilder().setStartQualifierInclusive(ByteString.copyFromUtf8("qual")).build();
     final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) columnsRead

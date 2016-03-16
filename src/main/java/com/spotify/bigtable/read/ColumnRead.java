@@ -34,13 +34,18 @@ public interface ColumnRead extends BigtableRead<Optional<Column>> {
 
   class ColumnReadImpl extends AbstractBigtableRead<Optional<Family>, Optional<Column>> implements ColumnRead {
 
-    public ColumnReadImpl(final BigtableRead.Internal<Optional<Family>> family, final String columnQualifier) {
+    public ColumnReadImpl(final BigtableRead.Internal<Optional<Family>> family, final ByteString columnQualifierBytes) {
       super(family);
 
       final RowFilter.Builder qualifierFilter = RowFilter.newBuilder()
-              .setColumnQualifierRegexFilter(ByteString.copyFromUtf8(toExactMatchRegex(columnQualifier)));
+              .setColumnQualifierRegexFilter(columnQualifierBytes);
       addRowFilter(qualifierFilter);
     }
+
+    public ColumnReadImpl(final BigtableRead.Internal<Optional<Family>> family, final String columnQualifier) {
+      this(family, ByteString.copyFromUtf8(toExactMatchRegex(columnQualifier)));
+    }
+
 
     @Override
     protected Optional<Column> parentDataTypeToDataType(final Optional<Family> family) {
