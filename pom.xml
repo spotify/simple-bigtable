@@ -75,10 +75,6 @@
       <version>0.2.4</version>
       <exclusions>
         <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>com.google.code.findbugs</groupId>
           <artifactId>jsr305</artifactId>
         </exclusion>
@@ -96,11 +92,11 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- Use Guava 18  -->
+    <!-- Bigtable Needs Guava 19  -->
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>18.0</version>
+      <version>19.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.http-client</groupId>
