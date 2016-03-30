@@ -19,10 +19,13 @@
 
 package com.spotify.bigtable;
 
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
 import com.google.cloud.bigtable.grpc.BigtableSession;
 import com.google.cloud.bigtable.grpc.BigtableTableAdminClient;
 import org.mockito.Mockito;
+
+import java.io.IOException;
 
 public class BigtableMock extends Bigtable {
 
@@ -48,19 +51,29 @@ public class BigtableMock extends Bigtable {
     final BigtableTableAdminClient tableAdminClient = Mockito.mock(BigtableTableAdminClient.class);
     final BigtableSession session = Mockito.mock(BigtableSession.class);
 
-    Mockito.when(session.getDataClient()).thenReturn(dataClient);
-    Mockito.when(session.getTableAdminClient()).thenReturn(tableAdminClient);
+    try {
+      Mockito.when(session.getDataClient()).thenReturn(dataClient);
+      Mockito.when(session.getTableAdminClient()).thenReturn(tableAdminClient);
+    } catch (IOException e) {
+      Throwables.propagate(e);
+    }
 
     return new BigtableMock(session, "project", "zone", "cluster");
   }
 
-  public static Bigtable getMock(final String project, final String zone, final String cluster) {
+  public static Bigtable getMock(final String project,
+                                 final String zone,
+                                 final String cluster) {
     final BigtableDataClient dataClient = Mockito.mock(BigtableDataClient.class);
     final BigtableTableAdminClient tableAdminClient = Mockito.mock(BigtableTableAdminClient.class);
     final BigtableSession session = Mockito.mock(BigtableSession.class);
 
-    Mockito.when(session.getDataClient()).thenReturn(dataClient);
-    Mockito.when(session.getTableAdminClient()).thenReturn(tableAdminClient);
+    try {
+      Mockito.when(session.getDataClient()).thenReturn(dataClient);
+      Mockito.when(session.getTableAdminClient()).thenReturn(tableAdminClient);
+    } catch (IOException e) {
+      Throwables.propagate(e);
+    }
 
     return new BigtableMock(session, project, zone, cluster);
   }
