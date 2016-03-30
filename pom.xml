@@ -14,6 +14,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <netty.version>4.1.0.CR1</netty.version>
   </properties>
 
   <parent>
@@ -71,63 +72,79 @@
     <dependency>
       <groupId>com.google.cloud.bigtable</groupId>
       <artifactId>bigtable-client-core</artifactId>
-      <version>0.2.2</version>
+      <version>0.2.4</version>
       <exclusions>
         <exclusion>
-          <groupId>com.google.auth</groupId>
-          <artifactId>google-auth-library-oauth2-http</artifactId>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>com.google.http-client</groupId>
-          <artifactId>google-http-client</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.twitter</groupId>
-          <artifactId>hpack</artifactId>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- For some reason the enforcer needs these versions specified -->
     <dependency>
-      <groupId>com.google.auth</groupId>
-      <artifactId>google-auth-library-oauth2-http</artifactId>
-      <version>0.1.0</version>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+      <version>0.13.1</version>
+      <exclusions>
+        <exclusion>
+          <!-- Pull in protobuf from bigtable-protos not grpc-protos -->
+          <groupId>com.google.protobuf</groupId>
+          <artifactId>protobuf-java</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- Use Guava 18  -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>18.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.http-client</groupId>
-      <artifactId>google-http-client</artifactId>
-      <version>1.19.0</version>
+      <artifactId>google-http-client-jackson2</artifactId>
+      <version>1.21.0</version>
     </dependency>
-    <dependency>
-      <groupId>com.twitter</groupId>
-      <artifactId>hpack</artifactId>
-      <version>0.11.0</version>
-    </dependency>
-    <!-- BigTable needs this version of Netty to connect-->
+    <!-- BigTable needs this version of Netty included to connect -->
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-      <version>4.1.0.Beta6</version>
+      <version>${netty.version}</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-transport</artifactId>
-      <version>4.1.0.Beta6</version>
+      <version>${netty.version}</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-codec</artifactId>
-      <version>4.1.0.Beta6</version>
+      <version>${netty.version}</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-common</artifactId>
-      <version>4.1.0.Beta6</version>
+      <version>${netty.version}</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-handler</artifactId>
-      <version>4.1.0.Beta6</version>
+      <version>${netty.version}</version>
+    </dependency>
+    <!-- Include open ssl version for 64 bit linux and mac-->
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-tcnative</artifactId>
+      <version>1.1.33.Fork11</version>
+      <classifier>linux-x86_64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-tcnative</artifactId>
+      <version>1.1.33.Fork11</version>
+      <classifier>osx-x86_64</classifier>
     </dependency>
 
     <!-- Test Dependencies -->
@@ -147,6 +164,24 @@
 
   <build>
     <plugins>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.4.1</version>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <configuration>
+              <rules>
+                <requireUpperBoundDeps />
+              </rules>
+            </configuration>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>

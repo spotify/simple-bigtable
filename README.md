@@ -11,6 +11,19 @@ while not preventing you from doing anything you could do with the RPC client.
 
 This is very much a work in progress and is just in the early stages of design and implementation.
 
+To import with maven, add this to your pom:
+
+```xml
+<dependency>
+    <groupId>com.spotify</groupId>
+    <artifactId>bigtable-client</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+This dependency should include everything necessary to connect to Bigtable with no extra
+dependencies for Linux and Mac users. For others distributions you may need to look into
+[configuring OpenSSL for gRPC authentication](https://github.com/grpc/grpc-java/blob/master/SECURITY.md#openssl-statically-linked-netty-tcnative-boringssl-static).
 
 ## Raw RPC Client vs Bigtable Client Comparison
 
