@@ -25,6 +25,7 @@ import com.google.bigtable.v2.ColumnRange;
 import com.google.bigtable.v2.Family;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
+import com.google.bigtable.v2.TimestampRange;
 import com.google.protobuf.ByteString;
 
 import java.util.List;
@@ -41,6 +42,12 @@ public interface ColumnsRead extends BigtableRead<List<Column>> {
   ColumnsRead endQualifierCLosed(final ByteString endQualifierClosed);
 
   ColumnsRead endQualifierOpen(final ByteString endQualifierOpen);
+
+  ColumnsRead latestCells();
+
+  ColumnsRead startTimestampMicros(final long startTimestampMicros);
+
+  ColumnsRead endTimestampMicros(final long startTimestampMicros);
 
   class ColumnsReadImpl extends AbstractBigtableRead<Optional<Row>, List<Column>> implements ColumnsRead {
 
@@ -85,6 +92,26 @@ public interface ColumnsRead extends BigtableRead<List<Column>> {
     public ColumnsRead endQualifierOpen(final ByteString endQualifierOpen) {
       final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierOpen(endQualifierOpen);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
+      return this;
+    }
+
+    @Override
+    public ColumnsRead latestCells() {
+      addRowFilter(RowFilter.newBuilder().setCellsPerColumnLimitFilter(1));
+      return this;
+    }
+
+    @Override
+    public ColumnsRead startTimestampMicros(final long startTimestampMicros) {
+      final TimestampRange tsRange = TimestampRange.newBuilder().setStartTimestampMicros(startTimestampMicros).build();
+      addRowFilter(RowFilter.newBuilder().setTimestampRangeFilter(tsRange));
+      return this;
+    }
+
+    @Override
+    public ColumnsRead endTimestampMicros(final long endTimestampMicros) {
+      final TimestampRange tsRange = TimestampRange.newBuilder().setEndTimestampMicros(endTimestampMicros).build();
+      addRowFilter(RowFilter.newBuilder().setTimestampRangeFilter(tsRange));
       return this;
     }
 
