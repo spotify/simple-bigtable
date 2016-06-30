@@ -19,9 +19,9 @@
 
 package com.spotify.bigtable.readmodifywrite;
 
-import com.google.bigtable.v1.ReadModifyWriteRowRequest;
-import com.google.bigtable.v1.ReadModifyWriteRule;
-import com.google.bigtable.v1.Row;
+import com.google.bigtable.v2.ReadModifyWriteRowRequest;
+import com.google.bigtable.v2.ReadModifyWriteRowResponse;
+import com.google.bigtable.v2.ReadModifyWriteRule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
@@ -44,12 +44,12 @@ public class BigtableReadModifyWriteImpl
   }
 
   @Override
-  public Row execute() {
+  public ReadModifyWriteRowResponse execute() {
     return bigtable.getSession().getDataClient().readModifyWriteRow(readModifyWriteRequest.build());
   }
 
   @Override
-  public ListenableFuture<Row> executeAsync() {
+  public ListenableFuture<ReadModifyWriteRowResponse> executeAsync() {
     return bigtable.getSession().getDataClient().readModifyWriteRowAsync(readModifyWriteRequest.build());
   }
 

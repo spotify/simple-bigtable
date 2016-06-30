@@ -6,14 +6,14 @@
 
   <groupId>com.spotify</groupId>
   <artifactId>bigtable-client</artifactId>
-  <version>0.0.1-beta-SNAPSHOT</version>
+  <version>0.1.0-alpha-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>bigtable-client</name>
   <description>A wrapper around the Bigtable RPC client</description>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <projectId.build.sourceEncoding>UTF-8</projectId.build.sourceEncoding>
+    <projectId.reporting.outputEncoding>UTF-8</projectId.reporting.outputEncoding>
     <netty.version>4.1.0.CR1</netty.version>
   </properties>
 
@@ -72,7 +72,7 @@
     <dependency>
       <groupId>com.google.cloud.bigtable</groupId>
       <artifactId>bigtable-client-core</artifactId>
-      <version>0.3.0</version>
+      <version>0.9.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.google.code.findbugs</groupId>
@@ -101,7 +101,7 @@
     <dependency>
       <groupId>com.google.http-client</groupId>
       <artifactId>google-http-client-jackson2</artifactId>
-      <version>1.21.0</version>
+      <version>1.22.0</version>
     </dependency>
     <!-- BigTable needs this version of Netty included to connect include linux and osx base 64 versions-->
     <dependency>

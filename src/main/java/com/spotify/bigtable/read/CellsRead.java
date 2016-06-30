@@ -20,11 +20,11 @@
 package com.spotify.bigtable.read;
 
 import com.google.api.client.util.Lists;
-import com.google.bigtable.v1.Cell;
-import com.google.bigtable.v1.Column;
-import com.google.bigtable.v1.RowFilter;
-import com.google.bigtable.v1.TimestampRange;
-import com.google.bigtable.v1.ValueRange;
+import com.google.bigtable.v2.Cell;
+import com.google.bigtable.v2.Column;
+import com.google.bigtable.v2.RowFilter;
+import com.google.bigtable.v2.TimestampRange;
+import com.google.bigtable.v2.ValueRange;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
 import com.spotify.futures.FuturesExtra;
@@ -44,13 +44,13 @@ public interface CellsRead extends BigtableRead<List<Cell>> {
 
   CellsRead valueRegex(final ByteString valueRegex);
 
-  CellsRead startValueInclusive(final ByteString startValueInclusive);
+  CellsRead startValueClosed(final ByteString startValueInclusive);
 
-  CellsRead startValueExclusive(final ByteString startValueExclusive);
+  CellsRead startValueOpen(final ByteString startValueExclusive);
 
-  CellsRead endValueInclusive(final ByteString endValueInclusive);
+  CellsRead endValueClosed(final ByteString endValueInclusive);
 
-  CellsRead endValueExclusive(final ByteString endValueExclusive);
+  CellsRead endValueOpen(final ByteString endValueExclusive);
 
   class CellsReadImpl extends AbstractBigtableRead<Optional<Column>, List<Cell>> implements CellsRead {
 
@@ -110,29 +110,29 @@ public interface CellsRead extends BigtableRead<List<Cell>> {
     }
 
     @Override
-    public CellsRead startValueInclusive(final ByteString startValueInclusive) {
-      final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueInclusive(startValueInclusive);
+    public CellsRead startValueClosed(final ByteString startValueClosed) {
+      final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueClosed(startValueClosed);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
 
     @Override
-    public CellsRead startValueExclusive(final ByteString startValueExclusive) {
-      final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueExclusive(startValueExclusive);
+    public CellsRead startValueOpen(final ByteString startValueOpen) {
+      final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueOpen(startValueOpen);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
 
     @Override
-    public CellsRead endValueInclusive(final ByteString endValueInclusive) {
-      final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueInclusive(endValueInclusive);
+    public CellsRead endValueClosed(final ByteString endValueClosed) {
+      final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueClosed(endValueClosed);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }
 
     @Override
-    public CellsRead endValueExclusive(final ByteString endValueExclusive) {
-      final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueExclusive(endValueExclusive);
+    public CellsRead endValueOpen(final ByteString endValueOpen) {
+      final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueOpen(endValueOpen);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return this;
     }

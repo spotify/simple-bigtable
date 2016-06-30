@@ -19,10 +19,10 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v1.Family;
-import com.google.bigtable.v1.ReadRowsRequest;
-import com.google.bigtable.v1.Row;
-import com.google.bigtable.v1.RowFilter;
+import com.google.bigtable.v2.Family;
+import com.google.bigtable.v2.ReadRowsRequest;
+import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowFilter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.spotify.bigtable.BigtableMock;
@@ -56,8 +56,10 @@ public class FamilyReadImplTest {
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
     assertEquals(bigtableMock.getFullTableName("table"), readRequest.getTableName());
-    assertEquals("row", readRequest.getRowKey().toStringUtf8());
-    assertEquals(1, readRequest.getNumRowsLimit());
+    assertEquals("row", readRequest.getRows().getRowKeys(0).toStringUtf8());
+    assertEquals(1, readRequest.getRows().getRowKeysCount());
+    assertEquals(0, readRequest.getRows().getRowRangesCount());
+    assertEquals(1, readRequest.getRowsLimit());
     assertTrue(readRequest.getFilter().getChain().getFiltersCount() >= 2);
     assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().getChain().getFilters(0));
     assertEquals(toExactMatchRegex("family"), readRequest.getFilter().getChain().getFilters(1).getFamilyNameRegexFilter());

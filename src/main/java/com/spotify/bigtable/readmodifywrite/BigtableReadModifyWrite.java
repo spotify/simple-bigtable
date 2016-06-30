@@ -19,15 +19,15 @@
 
 package com.spotify.bigtable.readmodifywrite;
 
-import com.google.bigtable.v1.Row;
+import com.google.bigtable.v2.ReadModifyWriteRowResponse;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
 
 public interface BigtableReadModifyWrite {
 
-  Row execute();
+  ReadModifyWriteRowResponse execute();
 
-  ListenableFuture<Row> executeAsync();
+  ListenableFuture<ReadModifyWriteRowResponse> executeAsync();
 
   BigtableReadModifyWrite.Read read(final String column);
 

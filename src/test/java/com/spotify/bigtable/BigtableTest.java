@@ -19,7 +19,6 @@
 
 package com.spotify.bigtable;
 
-import com.google.cloud.bigtable.grpc.BigtableSession;
 import com.spotify.bigtable.mutate.BigtableMutationImpl;
 import com.spotify.bigtable.read.TableRead;
 import com.spotify.bigtable.readmodifywrite.BigtableReadModifyWriteImpl;
@@ -27,7 +26,6 @@ import com.spotify.bigtable.sample.BigtableSampleRowKeysImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -36,40 +34,27 @@ import static org.junit.Assert.assertEquals;
 @RunWith(MockitoJUnitRunner.class)
 public class BigtableTest {
 
-  @Mock
-  BigtableSession bigtableSession;
-
   Bigtable bigtable;
 
   @Before
   public void setUp() throws Exception {
-    bigtable = new Bigtable(bigtableSession, "project", "zone", "cluster");
-  }
-
-  @Test
-  public void testGetSession() throws Exception {
-    assertEquals(bigtableSession, bigtable.getSession());
+    bigtable = BigtableMock.getMock();
   }
 
   @Test
   public void testGetProject() throws Exception {
-    assertEquals("project", bigtable.getProject());
+    assertEquals("project", bigtable.getProjectId());
   }
 
   @Test
-  public void testGetZone() throws Exception {
-    assertEquals("zone", bigtable.getZone());
-  }
-
-  @Test
-  public void testGetCluster() throws Exception {
-    assertEquals("cluster", bigtable.getCluster());
+  public void testGetInstance() throws Exception {
+    assertEquals("instance", bigtable.getInstanceId());
   }
 
   @Test
   public void testClose() throws Exception {
     bigtable.close();
-    Mockito.verify(bigtableSession).close();
+    Mockito.verify(bigtable.getSession()).close();
   }
 
   @Test

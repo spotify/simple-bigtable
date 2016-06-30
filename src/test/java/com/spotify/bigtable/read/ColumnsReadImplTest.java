@@ -20,12 +20,12 @@
 package com.spotify.bigtable.read;
 
 import com.google.api.client.util.Lists;
-import com.google.bigtable.v1.Column;
-import com.google.bigtable.v1.ColumnRange;
-import com.google.bigtable.v1.Family;
-import com.google.bigtable.v1.ReadRowsRequest;
-import com.google.bigtable.v1.Row;
-import com.google.bigtable.v1.RowFilter;
+import com.google.bigtable.v2.Column;
+import com.google.bigtable.v2.ColumnRange;
+import com.google.bigtable.v2.Family;
+import com.google.bigtable.v2.ReadRowsRequest;
+import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowFilter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ByteString;
@@ -56,8 +56,10 @@ public class ColumnsReadImplTest {
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
     assertEquals(bigtableMock.getFullTableName("table"), readRequest.getTableName());
-    assertEquals("row", readRequest.getRowKey().toStringUtf8());
-    assertEquals(1, readRequest.getNumRowsLimit());
+    assertEquals("row", readRequest.getRows().getRowKeys(0).toStringUtf8());
+    assertEquals(1, readRequest.getRows().getRowKeysCount());
+    assertEquals(0, readRequest.getRows().getRowRangesCount());
+    assertEquals(1, readRequest.getRowsLimit());
   }
 
   @Test
@@ -105,10 +107,10 @@ public class ColumnsReadImplTest {
   }
 
   @Test
-  public void testStartQualifierInclusive() throws Exception {
-    final ColumnRange columnRange = ColumnRange.newBuilder().setStartQualifierInclusive(ByteString.copyFromUtf8("qual")).build();
+  public void testStartQualifierClosed() throws Exception {
+    final ColumnRange columnRange = ColumnRange.newBuilder().setStartQualifierClosed(ByteString.copyFromUtf8("qual")).build();
     final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) columnsRead
-            .startQualifierInclusive(columnRange.getStartQualifierInclusive());
+            .startQualifierClosed(columnRange.getStartQualifierClosed());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -120,10 +122,10 @@ public class ColumnsReadImplTest {
   }
 
   @Test
-  public void testStartQualifierExclusive() throws Exception {
-    final ColumnRange columnRange = ColumnRange.newBuilder().setStartQualifierExclusive(ByteString.copyFromUtf8("qual")).build();
+  public void testStartQualifierOpen() throws Exception {
+    final ColumnRange columnRange = ColumnRange.newBuilder().setStartQualifierOpen(ByteString.copyFromUtf8("qual")).build();
     final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) columnsRead
-            .startQualifierExclusive(columnRange.getStartQualifierExclusive());
+            .startQualifierOpen(columnRange.getStartQualifierOpen());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -135,10 +137,10 @@ public class ColumnsReadImplTest {
   }
 
   @Test
-  public void testEndQualifierInclusive() throws Exception {
-    final ColumnRange columnRange = ColumnRange.newBuilder().setEndQualifierInclusive(ByteString.copyFromUtf8("qual")).build();
+  public void testEndQualifierClosed() throws Exception {
+    final ColumnRange columnRange = ColumnRange.newBuilder().setEndQualifierClosed(ByteString.copyFromUtf8("qual")).build();
     final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) columnsRead
-            .endQualifierInclusive(columnRange.getEndQualifierInclusive());
+            .endQualifierCLosed(columnRange.getEndQualifierClosed());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -150,10 +152,10 @@ public class ColumnsReadImplTest {
   }
 
   @Test
-  public void testEndQualifierExclusive() throws Exception {
-    final ColumnRange columnRange = ColumnRange.newBuilder().setEndQualifierExclusive(ByteString.copyFromUtf8("qual")).build();
+  public void testEndQualifierOpen() throws Exception {
+    final ColumnRange columnRange = ColumnRange.newBuilder().setEndQualifierOpen(ByteString.copyFromUtf8("qual")).build();
     final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) columnsRead
-            .endQualifierExclusive(columnRange.getEndQualifierExclusive());
+            .endQualifierOpen(columnRange.getEndQualifierOpen());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -167,11 +169,11 @@ public class ColumnsReadImplTest {
   @Test
   public void testMultipleFilters() throws Exception {
     final ColumnRange familyRange = ColumnRange.newBuilder().setFamilyName("family").build();
-    final ColumnRange startQualRange = ColumnRange.newBuilder().setStartQualifierInclusive(ByteString.copyFromUtf8("start")).build();
-    final ColumnRange endQualRange = ColumnRange.newBuilder().setEndQualifierExclusive(ByteString.copyFromUtf8("end")).build();
+    final ColumnRange startQualRange = ColumnRange.newBuilder().setStartQualifierClosed(ByteString.copyFromUtf8("start")).build();
+    final ColumnRange endQualRange = ColumnRange.newBuilder().setEndQualifierOpen(ByteString.copyFromUtf8("end")).build();
     final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) this.columnsRead.familyName(familyRange.getFamilyName())
-            .startQualifierInclusive(startQualRange.getStartQualifierInclusive())
-            .endQualifierExclusive(endQualRange.getEndQualifierExclusive());
+            .startQualifierClosed(startQualRange.getStartQualifierClosed())
+            .endQualifierOpen(endQualRange.getEndQualifierOpen());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);

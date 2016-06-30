@@ -19,9 +19,9 @@
 
 package com.spotify.bigtable.mutate;
 
+import com.google.bigtable.v2.MutateRowResponse;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Empty;
 import com.google.protobuf.ServiceException;
 
 import java.util.Optional;
@@ -34,14 +34,14 @@ public interface BigtableMutation {
    * @return Empty protobuf object
    * @throws ServiceException on error
    */
-  Empty execute() throws ServiceException;
+  MutateRowResponse execute() throws ServiceException;
 
   /**
    * Execute the row mutations synchronously.
    *
    * @return Future of Empty protobuf object. Failed future on error.
    */
-  ListenableFuture<Empty> executeAsync();
+  ListenableFuture<MutateRowResponse> executeAsync();
 
   /**
    * Delete the entire row.

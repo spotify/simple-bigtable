@@ -19,7 +19,7 @@
 
 package com.spotify.bigtable.sample;
 
-import com.google.bigtable.v1.SampleRowKeysRequest;
+import com.google.bigtable.v2.SampleRowKeysRequest;
 import com.spotify.bigtable.BigtableMock;
 import org.junit.Before;
 import org.junit.Test;

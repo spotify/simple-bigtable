@@ -19,8 +19,9 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v1.Row;
-import com.google.bigtable.v1.RowFilter;
+import com.google.bigtable.v2.RowSet;
+import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowFilter;
 import com.google.protobuf.ByteString;
 
 import java.util.Arrays;
@@ -46,8 +47,8 @@ public interface RowRead extends BigtableRead<Optional<Row>> {
 
     public RowReadImpl(final TableRead.TableReadImpl tableRead, final String row) {
       super(tableRead);
-      readRequest.setRowKey(ByteString.copyFromUtf8(row));
-      readRequest.setNumRowsLimit(1);
+      readRequest.setRows(RowSet.newBuilder().addRowKeys(ByteString.copyFromUtf8(row)));
+      readRequest.setRowsLimit(1);
     }
 
     @Override

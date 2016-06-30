@@ -19,9 +19,9 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v1.ReadRowsRequest;
-import com.google.bigtable.v1.Row;
-import com.google.bigtable.v1.RowFilter;
+import com.google.bigtable.v2.ReadRowsRequest;
+import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowFilter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
@@ -52,8 +52,10 @@ public class RowReadImplTest {
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
     assertEquals(bigtableMock.getFullTableName("table"), readRequest.getTableName());
-    assertEquals("row", readRequest.getRowKey().toStringUtf8());
-    assertEquals(1, readRequest.getNumRowsLimit());
+    assertEquals("row", readRequest.getRows().getRowKeys(0).toStringUtf8());
+    assertEquals(1, readRequest.getRows().getRowKeysCount());
+    assertEquals(0, readRequest.getRows().getRowRangesCount());
+    assertEquals(1, readRequest.getRowsLimit());
   }
 
   @Test

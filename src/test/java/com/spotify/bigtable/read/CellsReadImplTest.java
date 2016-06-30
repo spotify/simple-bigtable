@@ -20,12 +20,12 @@
 package com.spotify.bigtable.read;
 
 import com.google.api.client.util.Lists;
-import com.google.bigtable.v1.Cell;
-import com.google.bigtable.v1.Column;
-import com.google.bigtable.v1.ReadRowsRequest;
-import com.google.bigtable.v1.RowFilter;
-import com.google.bigtable.v1.TimestampRange;
-import com.google.bigtable.v1.ValueRange;
+import com.google.bigtable.v2.Cell;
+import com.google.bigtable.v2.Column;
+import com.google.bigtable.v2.ReadRowsRequest;
+import com.google.bigtable.v2.RowFilter;
+import com.google.bigtable.v2.TimestampRange;
+import com.google.bigtable.v2.ValueRange;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ByteString;
@@ -60,8 +60,10 @@ public class CellsReadImplTest {
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
     assertEquals(bigtableMock.getFullTableName("table"), readRequest.getTableName());
-    assertEquals("row", readRequest.getRowKey().toStringUtf8());
-    assertEquals(1, readRequest.getNumRowsLimit());
+    assertEquals("row", readRequest.getRows().getRowKeys(0).toStringUtf8());
+    assertEquals(1, readRequest.getRows().getRowKeysCount());
+    assertEquals(0, readRequest.getRows().getRowRangesCount());
+    assertEquals(1, readRequest.getRowsLimit());
     assertTrue(readRequest.getFilter().getChain().getFiltersCount() >= 3);
     assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().getChain().getFilters(0));
     assertEquals(toExactMatchRegex("family"), readRequest.getFilter().getChain().getFilters(1).getFamilyNameRegexFilter());
@@ -175,10 +177,10 @@ public class CellsReadImplTest {
   }
 
   @Test
-  public void testStartValueInclusive() throws Exception {
-    final ValueRange valueRange = ValueRange.newBuilder().setStartValueInclusive(ByteString.copyFromUtf8("regex")).build();
+  public void testStartValueClosed() throws Exception {
+    final ValueRange valueRange = ValueRange.newBuilder().setStartValueClosed(ByteString.copyFromUtf8("regex")).build();
     final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
-            .startValueInclusive(valueRange.getStartValueInclusive());
+            .startValueClosed(valueRange.getStartValueClosed());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -188,10 +190,10 @@ public class CellsReadImplTest {
   }
 
   @Test
-  public void testStartValueExclusive() throws Exception {
-    final ValueRange valueRange = ValueRange.newBuilder().setStartValueExclusive(ByteString.copyFromUtf8("regex")).build();
+  public void testStartValueOpen() throws Exception {
+    final ValueRange valueRange = ValueRange.newBuilder().setStartValueOpen(ByteString.copyFromUtf8("regex")).build();
     final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
-            .startValueExclusive(valueRange.getStartValueExclusive());
+            .startValueOpen(valueRange.getStartValueOpen());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -201,10 +203,10 @@ public class CellsReadImplTest {
   }
 
   @Test
-  public void testEndValueInclusive() throws Exception {
-    final ValueRange valueRange = ValueRange.newBuilder().setEndValueInclusive(ByteString.copyFromUtf8("regex")).build();
+  public void testEndValueClosed() throws Exception {
+    final ValueRange valueRange = ValueRange.newBuilder().setEndValueClosed(ByteString.copyFromUtf8("regex")).build();
     final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
-            .endValueInclusive(valueRange.getEndValueInclusive());
+            .endValueClosed(valueRange.getEndValueClosed());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -214,10 +216,10 @@ public class CellsReadImplTest {
   }
 
   @Test
-  public void testEndValueExclusive() throws Exception {
-    final ValueRange valueRange = ValueRange.newBuilder().setEndValueExclusive(ByteString.copyFromUtf8("regex")).build();
+  public void testEndValueOpen() throws Exception {
+    final ValueRange valueRange = ValueRange.newBuilder().setEndValueOpen(ByteString.copyFromUtf8("regex")).build();
     final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
-            .endValueExclusive(valueRange.getEndValueExclusive());
+            .endValueOpen(valueRange.getEndValueOpen());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);

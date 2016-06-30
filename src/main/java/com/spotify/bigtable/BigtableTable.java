@@ -30,11 +30,6 @@ public abstract class BigtableTable {
   }
 
   public String getFullTableName() {
-    return String.format("projects/%s/zones/%s/clusters/%s/tables/%s",
-      bigtable.getProject(),
-      bigtable.getZone(),
-      bigtable.getCluster(),
-      table
-    );
+    return bigtable.getSession().getOptions().getInstanceName().toTableNameStr(table);
   }
 }

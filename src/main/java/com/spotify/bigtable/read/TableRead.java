@@ -19,8 +19,8 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v1.ReadRowsRequest;
-import com.google.bigtable.v1.Row;
+import com.google.bigtable.v2.ReadRowsRequest;
+import com.google.bigtable.v2.Row;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;

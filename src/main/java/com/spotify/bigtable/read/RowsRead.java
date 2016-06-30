@@ -19,18 +19,16 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v1.Row;
-import com.google.bigtable.v1.RowRange;
+import com.google.bigtable.v2.Row;
 import com.google.cloud.bigtable.grpc.scanner.ResultScanner;
 import com.google.protobuf.ByteString;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 
 public interface RowsRead extends BigtableRead<List<Row>> {
 
   RowsRead limit(final long limit);
-
-  RowsRead allowRowInterleaving(final boolean allowRowInterleaving);
 
   RowsRead startKey(final ByteString startKey);
 
@@ -51,28 +49,18 @@ public interface RowsRead extends BigtableRead<List<Row>> {
 
     @Override
     public RowsRead limit(final long limit) {
-      readRequest.setNumRowsLimit(limit);
-      return this;
-    }
-
-    @Override
-    public RowsRead allowRowInterleaving(final boolean allowRowInterleaving) {
-      readRequest.setAllowRowInterleaving(allowRowInterleaving);
+      readRequest.setRowsLimit(limit);
       return this;
     }
 
     @Override
     public RowsRead startKey(final ByteString startKey) {
-      final RowRange.Builder rowRange = RowRange.newBuilder(readRequest.getRowRange()).setStartKey(startKey);
-      readRequest.setRowRange(rowRange);
-      return this;
+      throw new NotImplementedException();
     }
 
     @Override
     public RowsRead endKey(final ByteString endKey) {
-      final RowRange.Builder rowRange = RowRange.newBuilder(readRequest.getRowRange()).setEndKey(endKey);
-      readRequest.setRowRange(rowRange);
-      return this;
+      throw new NotImplementedException();
     }
 
     @Override

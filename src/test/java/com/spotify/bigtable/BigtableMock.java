@@ -20,7 +20,9 @@
 package com.spotify.bigtable;
 
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
+import com.google.cloud.bigtable.config.BigtableOptions;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
+import com.google.cloud.bigtable.grpc.BigtableInstanceName;
 import com.google.cloud.bigtable.grpc.BigtableSession;
 import com.google.cloud.bigtable.grpc.BigtableTableAdminClient;
 import org.mockito.Mockito;
@@ -29,8 +31,11 @@ import java.io.IOException;
 
 public class BigtableMock extends Bigtable {
 
-  public BigtableMock(final BigtableSession session, final String project, final String zone, final String cluster) {
-    super(session, project, zone, cluster);
+  public static final String PROJECT_ID = "project";
+  public static final String INSTANCE_ID = "instance";
+
+  public BigtableMock(final BigtableSession session, final String project, final String instance) {
+    super(session, project, instance);
   }
 
   public BigtableDataClient getMockedDataClient() {
@@ -38,32 +43,29 @@ public class BigtableMock extends Bigtable {
   }
 
   public String getFullTableName(final String table) {
-    return String.format("projects/%s/zones/%s/clusters/%s/tables/%s",
-            getProject(),
-            getZone(),
-            getCluster(),
-            table
-    );
+    return new BigtableInstanceName(PROJECT_ID, INSTANCE_ID).toTableNameStr(table);
   }
 
   public static BigtableMock getMock() {
     final BigtableDataClient dataClient = Mockito.mock(BigtableDataClient.class);
     final BigtableTableAdminClient tableAdminClient = Mockito.mock(BigtableTableAdminClient.class);
     final BigtableSession session = Mockito.mock(BigtableSession.class);
+    final BigtableOptions options = Mockito.mock(BigtableOptions.class);
 
     try {
       Mockito.when(session.getDataClient()).thenReturn(dataClient);
       Mockito.when(session.getTableAdminClient()).thenReturn(tableAdminClient);
+      Mockito.when(session.getOptions()).thenReturn(options);
+      Mockito.when(options.getInstanceName()).thenReturn(new BigtableInstanceName(PROJECT_ID, INSTANCE_ID));
     } catch (IOException e) {
       Throwables.propagate(e);
     }
 
-    return new BigtableMock(session, "project", "zone", "cluster");
+    return new BigtableMock(session, PROJECT_ID, INSTANCE_ID);
   }
 
   public static Bigtable getMock(final String project,
-                                 final String zone,
-                                 final String cluster) {
+                                 final String instance) {
     final BigtableDataClient dataClient = Mockito.mock(BigtableDataClient.class);
     final BigtableTableAdminClient tableAdminClient = Mockito.mock(BigtableTableAdminClient.class);
     final BigtableSession session = Mockito.mock(BigtableSession.class);
@@ -75,6 +77,6 @@ public class BigtableMock extends Bigtable {
       Throwables.propagate(e);
     }
 
-    return new BigtableMock(session, project, zone, cluster);
+    return new BigtableMock(session, project, instance);
   }
 }

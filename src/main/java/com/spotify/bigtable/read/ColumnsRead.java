@@ -20,11 +20,11 @@
 package com.spotify.bigtable.read;
 
 import com.google.api.client.util.Lists;
-import com.google.bigtable.v1.Column;
-import com.google.bigtable.v1.ColumnRange;
-import com.google.bigtable.v1.Family;
-import com.google.bigtable.v1.Row;
-import com.google.bigtable.v1.RowFilter;
+import com.google.bigtable.v2.Column;
+import com.google.bigtable.v2.ColumnRange;
+import com.google.bigtable.v2.Family;
+import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowFilter;
 import com.google.protobuf.ByteString;
 
 import java.util.List;
@@ -32,15 +32,15 @@ import java.util.Optional;
 
 public interface ColumnsRead extends BigtableRead<List<Column>> {
 
-  public ColumnsRead familyName(final String familyName);
+  ColumnsRead familyName(final String familyName);
 
-  public ColumnsRead startQualifierInclusive(final ByteString startQualifierInclusive);
+  ColumnsRead startQualifierClosed(final ByteString startQualifierClosed);
 
-  public ColumnsRead startQualifierExclusive(final ByteString startQualifierExclusive);
+  ColumnsRead startQualifierOpen(final ByteString startQualifierOpen);
 
-  public ColumnsRead endQualifierInclusive(final ByteString endQualifierInclusive);
+  ColumnsRead endQualifierCLosed(final ByteString endQualifierClosed);
 
-  public ColumnsRead endQualifierExclusive(final ByteString endQualifierExclusive);
+  ColumnsRead endQualifierOpen(final ByteString endQualifierOpen);
 
   class ColumnsReadImpl extends AbstractBigtableRead<Optional<Row>, List<Column>> implements ColumnsRead {
 
@@ -61,29 +61,29 @@ public interface ColumnsRead extends BigtableRead<List<Column>> {
     }
 
     @Override
-    public ColumnsRead startQualifierInclusive(final ByteString startQualifierInclusive) {
-      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierInclusive(startQualifierInclusive);
+    public ColumnsRead startQualifierClosed(final ByteString startQualifierClosed) {
+      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierClosed(startQualifierClosed);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead startQualifierExclusive(final ByteString startQualifierExclusive) {
-      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierExclusive(startQualifierExclusive);
+    public ColumnsRead startQualifierOpen(final ByteString startQualifierOpen) {
+      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierOpen(startQualifierOpen);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead endQualifierInclusive(final ByteString endQualifierInclusive) {
-      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierInclusive(endQualifierInclusive);
+    public ColumnsRead endQualifierCLosed(final ByteString endQualifierClosed) {
+      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierClosed(endQualifierClosed);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }
 
     @Override
-    public ColumnsRead endQualifierExclusive(final ByteString endQualifierExclusive) {
-      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierExclusive(endQualifierExclusive);
+    public ColumnsRead endQualifierOpen(final ByteString endQualifierOpen) {
+      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierOpen(endQualifierOpen);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return this;
     }

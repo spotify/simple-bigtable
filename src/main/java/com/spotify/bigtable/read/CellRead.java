@@ -19,9 +19,9 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v1.Cell;
-import com.google.bigtable.v1.Column;
-import com.google.bigtable.v1.RowFilter;
+import com.google.bigtable.v2.Cell;
+import com.google.bigtable.v2.Column;
+import com.google.bigtable.v2.RowFilter;
 
 import java.util.Optional;
 

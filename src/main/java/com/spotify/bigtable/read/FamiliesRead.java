@@ -20,9 +20,9 @@
 package com.spotify.bigtable.read;
 
 import com.google.api.client.util.Lists;
-import com.google.bigtable.v1.Family;
-import com.google.bigtable.v1.Row;
-import com.google.bigtable.v1.RowFilter;
+import com.google.bigtable.v2.Family;
+import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowFilter;
 
 import java.util.List;
 import java.util.Optional;

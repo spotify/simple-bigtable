@@ -32,13 +32,13 @@ dependencies for Linux and Mac users. For others distributions you may need to l
 To give an example of using the base RPC client (which gives the `BigtableSession` object), this is how you would
 request a single cell from Bigtable.
 ```java
-String project;
+String projectId;
 String zone;
 String cluster;
 BigtableSession session;
 
 String fullTableName = String.format("projects/%s/zones/%s/clusters/%s/tables/%s",
-        project,
+        projectId,
         zone,
         cluster,
         "my-table");
@@ -72,12 +72,12 @@ needing to constantly convert a list of rows down to a single cell.
  
 Here is the same query as above using this wrapper.
 ```java
-String project;
+String projectId;
 String zone;
 String cluster;
 BigtableSession session;
 
-Bigtable bigtable = new Bigtable(session, project, zone, cluster);
+Bigtable bigtable = new Bigtable(session, projectId, zone, cluster);
 final ListenableFuture<Optional<Cell>> cell = bigtable.read("my-table")
     .row("my-row")
     .column("column-family:column-1") // specify both column family and column qualifier separated by colon

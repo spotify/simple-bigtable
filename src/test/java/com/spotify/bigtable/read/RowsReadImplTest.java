@@ -19,13 +19,11 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v1.ReadRowsRequest;
-import com.google.bigtable.v1.Row;
-import com.google.bigtable.v1.RowRange;
+import com.google.bigtable.v2.ReadRowsRequest;
+import com.google.bigtable.v2.Row;
 import com.google.cloud.bigtable.grpc.scanner.ResultScanner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
-import com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -98,38 +95,6 @@ public class RowsReadImplTest {
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
 
-    assertEquals(10, readRequest.getNumRowsLimit());
-  }
-
-  @Test
-  public void testAllowRowInterleaving() throws Exception {
-    final RowsRead.RowsReadImpl read = (RowsRead.RowsReadImpl) rowsRead.allowRowInterleaving(true);
-
-    final ReadRowsRequest.Builder readRequest = read.readRequest();
-    verifyReadRequest(readRequest);
-
-    assertTrue(readRequest.getAllowRowInterleaving());
-  }
-
-  @Test
-  public void testStartKey() throws Exception {
-    final RowRange rowRange = RowRange.newBuilder().setStartKey(ByteString.copyFromUtf8("start")).build();
-    final RowsRead.RowsReadImpl read = (RowsRead.RowsReadImpl) rowsRead.startKey(rowRange.getStartKey());
-
-    final ReadRowsRequest.Builder readRequest = read.readRequest();
-    verifyReadRequest(readRequest);
-
-    assertEquals(rowRange, readRequest.getRowRange());
-  }
-
-  @Test
-  public void testEndKey() throws Exception {
-    final RowRange rowRange = RowRange.newBuilder().setEndKey(ByteString.copyFromUtf8("end")).build();
-    final RowsRead.RowsReadImpl read = (RowsRead.RowsReadImpl) rowsRead.endKey(rowRange.getEndKey());
-
-    final ReadRowsRequest.Builder readRequest = read.readRequest();
-    verifyReadRequest(readRequest);
-
-    assertEquals(rowRange, readRequest.getRowRange());
+    assertEquals(10, readRequest.getRowsLimit());
   }
 }

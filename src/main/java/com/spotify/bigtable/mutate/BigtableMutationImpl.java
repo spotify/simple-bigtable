@@ -19,13 +19,13 @@
 
 package com.spotify.bigtable.mutate;
 
-import com.google.bigtable.v1.MutateRowRequest;
-import com.google.bigtable.v1.Mutation;
-import com.google.bigtable.v1.TimestampRange;
+import com.google.bigtable.v2.MutateRowRequest;
+import com.google.bigtable.v2.MutateRowResponse;
+import com.google.bigtable.v2.Mutation;
+import com.google.bigtable.v2.TimestampRange;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Empty;
 import com.google.protobuf.ServiceException;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
@@ -44,12 +44,12 @@ public class BigtableMutationImpl extends BigtableTable implements BigtableMutat
   }
 
   @Override
-  public Empty execute() throws ServiceException {
+  public MutateRowResponse execute() throws ServiceException {
     return bigtable.getSession().getDataClient().mutateRow(mutateRowRequest.build());
   }
 
   @Override
-  public ListenableFuture<Empty> executeAsync() {
+  public ListenableFuture<MutateRowResponse> executeAsync() {
     return bigtable.getSession().getDataClient().mutateRowAsync(mutateRowRequest.build());
   }
 

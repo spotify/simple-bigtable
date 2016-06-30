@@ -33,31 +33,25 @@ import java.io.IOException;
 public class Bigtable {
 
   private final BigtableSession session;
-  private final String project;
-  private final String zone;
-  private final String cluster;
+  private final String projectId;
+  private final String instanceId;
 
-  public Bigtable(final BigtableSession session, final String project, final String zone, final String cluster) {
+  public Bigtable(final BigtableSession session, final String projectId, final String instanceId) {
     this.session = session;
-    this.project = project;
-    this.zone = zone;
-    this.cluster = cluster;
+    this.projectId = projectId;
+    this.instanceId = instanceId;
   }
 
   public BigtableSession getSession() {
     return session;
   }
 
-  public String getProject() {
-    return project;
+  public String getProjectId() {
+    return projectId;
   }
 
-  public String getZone() {
-    return zone;
-  }
-
-  public String getCluster() {
-    return cluster;
+  public String getInstanceId() {
+    return instanceId;
   }
 
   public void close() throws IOException {
