@@ -25,9 +25,7 @@ import com.google.bigtable.v2.Column;
 import com.google.bigtable.v2.RowFilter;
 import com.google.bigtable.v2.TimestampRange;
 import com.google.bigtable.v2.ValueRange;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import com.spotify.futures.FuturesExtra;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,11 +59,6 @@ public interface CellsRead extends BigtableRead<List<Cell>> {
     @Override
     protected List<Cell> parentDataTypeToDataType(final Optional<Column> column) {
       return column.map(Column::getCellsList).orElse(Lists.newArrayList());
-    }
-
-    @Override
-    public ListenableFuture<List<Cell>> executeAsync() {
-      return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
     }
 
     @Override
