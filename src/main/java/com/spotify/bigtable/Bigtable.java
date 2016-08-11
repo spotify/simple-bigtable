@@ -19,7 +19,6 @@
 
 package com.spotify.bigtable;
 
-import com.google.cloud.bigtable.grpc.BigtableSession;
 import com.spotify.bigtable.mutate.BigtableMutation;
 import com.spotify.bigtable.mutate.BigtableMutationImpl;
 import com.spotify.bigtable.read.TableRead;
@@ -27,6 +26,8 @@ import com.spotify.bigtable.readmodifywrite.BigtableReadModifyWrite;
 import com.spotify.bigtable.readmodifywrite.BigtableReadModifyWriteImpl;
 import com.spotify.bigtable.sample.BigtableSampleRowKeys;
 import com.spotify.bigtable.sample.BigtableSampleRowKeysImpl;
+
+import com.google.cloud.bigtable.grpc.BigtableSession;
 
 import java.io.IOException;
 
