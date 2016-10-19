@@ -6,7 +6,7 @@
 
   <groupId>com.spotify</groupId>
   <artifactId>bigtable-client</artifactId>
-  <version>0.1.0-beta7-SNAPSHOT</version>
+  <version>0.1.0-beta7</version>
   <packaging>jar</packaging>
   <name>bigtable-client</name>
   <description>A wrapper around the Bigtable RPC client</description>
