@@ -26,6 +26,7 @@ import com.google.cloud.bigtable.metrics.Counter;
 import com.google.cloud.bigtable.metrics.Meter;
 import com.google.cloud.bigtable.metrics.MetricRegistry;
 import com.google.cloud.bigtable.metrics.Timer;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Metrics registry using Spotify's semantic metrics.
@@ -82,6 +83,11 @@ public class BigtableSemanticMetricsRegistry implements MetricRegistry {
       public Context time() {
         final com.codahale.metrics.Timer.Context context = timer.time();
         return context::close;
+      }
+
+      @Override
+      public void update(final long duration, final TimeUnit timeUnit) {
+        timer.update(duration, timeUnit);
       }
     };
   }
