@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.spotify</groupId>
-  <artifactId>bigtable-client</artifactId>
+  <artifactId>simple-bigtable</artifactId>
   <version>0.1.0-beta8-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>bigtable-client</name>
+  <name>simple-bigtable</name>
   <description>A wrapper around the Bigtable RPC client</description>
 
   <properties>
@@ -32,9 +32,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://github.com/spotify/bigtable-client</connection>
-    <developerConnection>scm:git:git@github.com:spotify/bigtable-client</developerConnection>
-    <url>https://github.com/spotify/bigtable-client</url>
+    <connection>scm:git:https://github.com/spotify/simple-bigtable</connection>
+    <developerConnection>scm:git:git@github.com:spotify/simple-bigtable</developerConnection>
+    <url>https://github.com/spotify/simple-bigtable</url>
     <tag>HEAD</tag>
   </scm>
 

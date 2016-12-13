@@ -1,5 +1,5 @@
 # Cloud Bigtable Client
-[![Build Status](https://travis-ci.com/spotify/bigtable-client.svg?token=2JxpqAi9pfXo9AiMmByK&branch=master)](https://travis-ci.org/spotify/bigtable-client)
+[![Build Status](https://travis-ci.com/spotify/simple-bigtable.svg?token=2JxpqAi9pfXo9AiMmByK&branch=master)](https://travis-ci.org/spotify/simple-bigtable)
 
 ## Overview
 
@@ -16,7 +16,7 @@ To import with maven, add this to your pom:
 ```xml
 <dependency>
     <groupId>com.spotify</groupId>
-    <artifactId>bigtable-client</artifactId>
+    <artifactId>simple-bigtable</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
