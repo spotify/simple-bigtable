@@ -29,6 +29,7 @@ import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
 import com.google.bigtable.repackaged.com.google.protobuf.ServiceException;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
+import com.spotify.bigtable.ShadedListenableFutureWrapper;
 
 import java.util.Optional;
 
@@ -50,8 +51,8 @@ public class BigtableMutationImpl extends BigtableTable implements BigtableMutat
 
   @Override
   public ListenableFuture<MutateRowResponse> executeAsync() {
-    return (ListenableFuture<MutateRowResponse>) bigtable.getSession()
-        .getDataClient().mutateRowAsync(mutateRowRequest.build());
+    return new ShadedListenableFutureWrapper<>(
+        bigtable.getSession().getDataClient().mutateRowAsync(mutateRowRequest.build()));
   }
 
   @Override

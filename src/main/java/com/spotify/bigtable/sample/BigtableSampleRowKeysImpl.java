@@ -25,6 +25,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
+import com.spotify.bigtable.ShadedListenableFutureWrapper;
 
 import java.util.List;
 
@@ -44,8 +45,8 @@ public class BigtableSampleRowKeysImpl extends BigtableTable implements Bigtable
 
   @Override
   public ListenableFuture<List<SampleRowKeysResponse>> executeAsync() {
-    return (ListenableFuture<List<SampleRowKeysResponse>>)
-        bigtable.getSession().getDataClient().sampleRowKeysAsync(sampleRowKeysRequest.build());
+    return new ShadedListenableFutureWrapper<>(
+        bigtable.getSession().getDataClient().sampleRowKeysAsync(sampleRowKeysRequest.build()));
   }
 
   @VisibleForTesting
