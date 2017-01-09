@@ -22,7 +22,7 @@ package com.spotify.bigtable.mutate;
 import com.google.bigtable.v2.MutateRowRequest;
 import com.google.bigtable.v2.Mutation;
 import com.google.bigtable.v2.TimestampRange;
-import com.google.protobuf.ByteString;
+import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
 import org.junit.Before;
 import org.junit.Test;

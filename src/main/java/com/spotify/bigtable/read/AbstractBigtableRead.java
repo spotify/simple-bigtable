@@ -19,6 +19,7 @@
 
 package com.spotify.bigtable.read;
 
+import com.spotify.bigtable.ShadedListenableFutureWrapper;
 import com.spotify.futures.FuturesExtra;
 
 import com.google.bigtable.v2.ReadRowsRequest;
@@ -60,7 +61,8 @@ public abstract class AbstractBigtableRead<P, T> implements BigtableRead<T>, Big
 
   @Override
   public ListenableFuture<T> executeAsync() {
-    return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
+    return FuturesExtra.syncTransform(
+        new ShadedListenableFutureWrapper<>(getClient().readRowsAsync(readRequest().build())), this::toDataType);
   }
 
   @Override

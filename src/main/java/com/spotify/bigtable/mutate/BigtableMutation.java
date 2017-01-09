@@ -21,8 +21,8 @@ package com.spotify.bigtable.mutate;
 
 import com.google.bigtable.v2.MutateRowResponse;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.ServiceException;
+import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
+import com.google.bigtable.repackaged.com.google.protobuf.ServiceException;
 
 import java.util.Optional;
 

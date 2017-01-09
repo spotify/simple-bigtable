@@ -21,7 +21,7 @@ package com.spotify.bigtable.readmodifywrite;
 
 import com.google.bigtable.v2.ReadModifyWriteRowRequest;
 import com.google.bigtable.v2.ReadModifyWriteRule;
-import com.google.protobuf.ByteString;
+import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
 import org.junit.Before;
 import org.junit.Test;

@@ -44,7 +44,8 @@ public class BigtableSampleRowKeysImpl extends BigtableTable implements Bigtable
 
   @Override
   public ListenableFuture<List<SampleRowKeysResponse>> executeAsync() {
-    return bigtable.getSession().getDataClient().sampleRowKeysAsync(sampleRowKeysRequest.build());
+    return (ListenableFuture<List<SampleRowKeysResponse>>)
+        bigtable.getSession().getDataClient().sampleRowKeysAsync(sampleRowKeysRequest.build());
   }
 
   @VisibleForTesting

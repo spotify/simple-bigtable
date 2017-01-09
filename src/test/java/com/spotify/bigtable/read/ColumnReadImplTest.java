@@ -23,7 +23,7 @@ import com.google.bigtable.v2.Column;
 import com.google.bigtable.v2.Family;
 import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.RowFilter;
-import com.google.common.util.concurrent.Futures;
+import com.google.bigtable.repackaged.com.google.common.util.concurrent.Futures;
 import com.spotify.bigtable.BigtableMock;
 import org.junit.Before;
 import org.junit.Test;
