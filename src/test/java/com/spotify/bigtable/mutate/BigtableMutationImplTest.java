@@ -19,19 +19,20 @@
 
 package com.spotify.bigtable.mutate;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import com.google.bigtable.v2.MutateRowRequest;
 import com.google.bigtable.v2.Mutation;
 import com.google.bigtable.v2.TimestampRange;
 import com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class BigtableMutationImplTest {
 
@@ -206,10 +207,14 @@ public class BigtableMutationImplTest {
       assertEquals("family", mutation.getSetCell().getFamilyName());
       assertEquals("qualifier", mutation.getSetCell().getColumnQualifier().toStringUtf8());
       assertEquals("value", mutation.getSetCell().getValue().toStringUtf8());
-      assertEquals(0L, mutation.getSetCell().getTimestampMicros());
       assertEquals(Mutation.DeleteFromRow.getDefaultInstance(), mutation.getDeleteFromRow());
       assertEquals(Mutation.DeleteFromFamily.getDefaultInstance(), mutation.getDeleteFromFamily());
       assertEquals(Mutation.DeleteFromColumn.getDefaultInstance(), mutation.getDeleteFromColumn());
+
+      // Check timestamp in last 1 second
+      final long tsMillis = TimeUnit.MICROSECONDS.toMillis(mutation.getSetCell().getTimestampMicros());
+      final long nowMillis = System.currentTimeMillis();
+      assertTrue(tsMillis <= nowMillis && tsMillis > nowMillis - TimeUnit.SECONDS.toMillis(1));
     }
 
     verify(bigtableMock.getMockedDataClient()).mutateRow(bigtableMutation.getMutateRowRequest().build());

@@ -31,6 +31,7 @@ import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class BigtableMutationImpl extends BigtableTable implements BigtableMutation {
 
@@ -109,16 +110,18 @@ public class BigtableMutationImpl extends BigtableTable implements BigtableMutat
 
   @Override
   public BigtableMutation write(final String columnFamily, final String columnQualifier, final ByteString value) {
-    final Mutation.SetCell.Builder setCell = setCell(columnFamily, columnQualifier, value, Optional.empty());
-    mutateRowRequest.addMutations(Mutation.newBuilder().setSetCell(setCell));
-    return this;
+    // If no timestamp specified use current time
+    return write(columnFamily, columnQualifier, value, TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()));
   }
 
   @Override
   public BigtableMutation write(final String columnFamily, final String columnQualifier,
                                 final ByteString value, final long timestampMicros) {
-    final Mutation.SetCell.Builder setCell =
-            setCell(columnFamily, columnQualifier, value, Optional.of(timestampMicros));
+    final Mutation.SetCell.Builder setCell = Mutation.SetCell.newBuilder()
+        .setFamilyName(columnFamily)
+        .setColumnQualifier(ByteString.copyFromUtf8(columnQualifier))
+        .setValue(value)
+        .setTimestampMicros(timestampMicros);
     mutateRowRequest.addMutations(Mutation.newBuilder().setSetCell(setCell));
     return this;
   }
@@ -126,15 +129,5 @@ public class BigtableMutationImpl extends BigtableTable implements BigtableMutat
   @VisibleForTesting
   public MutateRowRequest.Builder getMutateRowRequest() {
     return mutateRowRequest;
-  }
-
-  private Mutation.SetCell.Builder setCell(final String columnFamily, final String columnQualifier,
-                                           final ByteString value, final Optional<Long> timestampMicros) {
-    final Mutation.SetCell.Builder setCell = Mutation.SetCell.newBuilder()
-            .setFamilyName(columnFamily)
-            .setColumnQualifier(ByteString.copyFromUtf8(columnQualifier))
-            .setValue(value);
-    timestampMicros.ifPresent(setCell::setTimestampMicros);
-    return setCell;
   }
 }

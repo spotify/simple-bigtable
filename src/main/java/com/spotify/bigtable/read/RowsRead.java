@@ -22,9 +22,8 @@ package com.spotify.bigtable.read;
 import com.google.bigtable.v2.Row;
 import com.google.cloud.bigtable.grpc.scanner.ResultScanner;
 import com.google.protobuf.ByteString;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.util.List;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public interface RowsRead extends BigtableRead<List<Row>> {
 
