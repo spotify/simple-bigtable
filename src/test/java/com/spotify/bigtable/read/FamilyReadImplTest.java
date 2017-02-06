@@ -24,7 +24,7 @@ import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Futures;
+import com.google.bigtable.repackaged.com.google.common.util.concurrent.Futures;
 import com.spotify.bigtable.BigtableMock;
 import org.junit.Before;
 import org.junit.Test;

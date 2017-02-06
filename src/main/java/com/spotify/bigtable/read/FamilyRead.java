@@ -22,7 +22,7 @@ package com.spotify.bigtable.read;
 import com.google.bigtable.v2.Family;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
-import com.google.protobuf.ByteString;
+import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,7 +58,8 @@ public interface FamilyRead extends BigtableRead<Optional<Family>> {
     @Override
     public ColumnsRead columnQualifierRegex(final String columnQualifierRegex) {
       final ByteString columnRegexBytes = ByteString.copyFromUtf8(columnQualifierRegex);
-      final RowFilter.Builder columnFilter = RowFilter.newBuilder().setColumnQualifierRegexFilter(columnRegexBytes);
+      final RowFilter.Builder columnFilter = RowFilter.newBuilder()
+          .setColumnQualifierRegexFilter(columnRegexBytes);
 
       // In order to allow the parent read to be reused we do not want to add the filters to the parents readRequest
       // Therefore we need to make sure the parent is unaltered. We probably should make a deep copy (hard to do

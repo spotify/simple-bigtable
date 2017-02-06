@@ -22,7 +22,7 @@ package com.spotify.bigtable.read;
 import com.google.bigtable.v2.RowSet;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
-import com.google.protobuf.ByteString;
+import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
 
 import java.util.Arrays;
 import java.util.List;

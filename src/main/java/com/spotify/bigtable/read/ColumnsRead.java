@@ -26,7 +26,7 @@ import com.google.bigtable.v2.Family;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
 import com.google.bigtable.v2.TimestampRange;
-import com.google.protobuf.ByteString;
+import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
 
 import java.util.List;
 import java.util.Optional;

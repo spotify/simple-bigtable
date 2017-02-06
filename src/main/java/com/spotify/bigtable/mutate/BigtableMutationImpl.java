@@ -25,10 +25,11 @@ import com.google.bigtable.v2.Mutation;
 import com.google.bigtable.v2.TimestampRange;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.ServiceException;
+import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
+import com.google.bigtable.repackaged.com.google.protobuf.ServiceException;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
+import com.spotify.bigtable.ShadedListenableFutureWrapper;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +52,8 @@ public class BigtableMutationImpl extends BigtableTable implements BigtableMutat
 
   @Override
   public ListenableFuture<MutateRowResponse> executeAsync() {
-    return bigtable.getSession().getDataClient().mutateRowAsync(mutateRowRequest.build());
+    return new ShadedListenableFutureWrapper<>(
+        bigtable.getSession().getDataClient().mutateRowAsync(mutateRowRequest.build()));
   }
 
   @Override

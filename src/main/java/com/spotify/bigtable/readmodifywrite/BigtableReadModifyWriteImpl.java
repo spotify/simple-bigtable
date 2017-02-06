@@ -24,9 +24,10 @@ import com.google.bigtable.v2.ReadModifyWriteRowResponse;
 import com.google.bigtable.v2.ReadModifyWriteRule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.ByteString;
+import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
+import com.spotify.bigtable.ShadedListenableFutureWrapper;
 
 public class BigtableReadModifyWriteImpl
         extends BigtableTable
@@ -50,7 +51,8 @@ public class BigtableReadModifyWriteImpl
 
   @Override
   public ListenableFuture<ReadModifyWriteRowResponse> executeAsync() {
-    return bigtable.getSession().getDataClient().readModifyWriteRowAsync(readModifyWriteRequest.build());
+    return new ShadedListenableFutureWrapper<>(
+        bigtable.getSession().getDataClient().readModifyWriteRowAsync(readModifyWriteRequest.build()));
   }
 
   @Override

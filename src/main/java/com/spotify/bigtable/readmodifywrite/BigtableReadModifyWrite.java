@@ -21,7 +21,7 @@ package com.spotify.bigtable.readmodifywrite;
 
 import com.google.bigtable.v2.ReadModifyWriteRowResponse;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.ByteString;
+import com.google.bigtable.repackaged.com.google.protobuf.ByteString;
 
 public interface BigtableReadModifyWrite {
 
