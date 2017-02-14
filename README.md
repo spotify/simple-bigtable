@@ -1,5 +1,4 @@
-# Cloud Bigtable Client
-[![Build Status](https://travis-ci.com/spotify/simple-bigtable.svg?token=2JxpqAi9pfXo9AiMmByK&branch=master)](https://travis-ci.org/spotify/simple-bigtable)
+# Simple Bigtable
 
 ## Overview
 
@@ -7,7 +6,7 @@
 of data and maintaining very low read latency. The main drawback to using Bigtable is that Google does
 not currently have an official asynchronous client. Within Spotify we have been using the RPC client which is
 a pain to use. This library aims to fix that by making the most common interactions with Bigtable clean and easy
-while not preventing you from doing anything you could do with the RPC client.
+to use while not preventing you from doing anything you could do with the RPC client.
 
 This is very much a work in progress and is just in the early stages of design and implementation.
 
@@ -17,13 +16,9 @@ To import with maven, add this to your pom:
 <dependency>
     <groupId>com.spotify</groupId>
     <artifactId>simple-bigtable</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
-
-This dependency should include everything necessary to connect to Bigtable with no extra
-dependencies for Linux and Mac users. For others distributions you may need to look into
-[configuring OpenSSL for gRPC authentication](https://github.com/grpc/grpc-java/blob/master/SECURITY.md#openssl-statically-linked-netty-tcnative-boringssl-static).
 
 ## Raw RPC Client vs Bigtable Client Comparison
 
@@ -70,7 +65,7 @@ The goal of this client is to let you query what you want with minimal overhead 
 be no need to create all these filter objects) as well as give you the object you want without
 needing to constantly convert a list of rows down to a single cell.
  
-Here is the same query as above using this wrapper.
+Here is the same query as above using this client wrapper.
 ```java
 String projectId;
 String zone;
@@ -232,7 +227,7 @@ final List<SampleRowKeysResponse> sampleRowKeys = bigtable.sampleRowKeys("my-tab
 ### CheckAndMutateRow - NOT YET IMPLEMENTED
 
 Perform a read and a set of mutations depending on whether the read returns data. This is not yet implemented but
-here are some ideas on how you might perform this operation.
+here are some ideas on how this operation might be implemented in the future.
 
 Have the check specified like a read, then allow mutations to be added.
 ```java
@@ -257,6 +252,7 @@ bigtable.checkAndMutateRow("my-table", "my-row")
     .ifDoesNotExist(someOtherMutation)
     .executeAsync();
 ```
+Pull requests with other ideas are encouraged.
 
 ### Table and Cluster Admin Operations - NOT YET IMPLEMENTED
 
@@ -270,10 +266,6 @@ to include.
  Something like `BigtableColumnsWithinFamilies` could be added where it keeps track of needing different column
  families but that is confusing. Another option is adding the filtering methods to every Read object which would also
  be super confusing.
-- Columns are confusing since a single column is really just a column family and a column qualifier yet they are
- completely separate objects (Family and Column) in the response and add this 4th dimension. I do not really care
- about that family object, it would be much nicer if the Column object also contained the family the column belongs
- to. Perhaps a custom Column object can be made.
 
 ## Code of conduct
 This project adheres to the [Open Code of Conduct][code-of-conduct]. By participating, you are expected to honor this code.
