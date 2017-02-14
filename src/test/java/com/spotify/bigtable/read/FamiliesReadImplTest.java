@@ -45,7 +45,7 @@ public class FamiliesReadImplTest {
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    final RowRead.RowReadImpl rowRead = new RowRead.RowReadImpl(tableRead, "row");
+    final RowRead.RowReadImpl rowRead = tableRead.row("row");
     familiesRead = new FamiliesRead.FamiliesReadImpl(rowRead);
   }
 

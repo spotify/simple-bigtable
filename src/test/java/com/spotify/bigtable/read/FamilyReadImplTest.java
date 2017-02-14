@@ -19,20 +19,6 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v2.Family;
-import com.google.bigtable.v2.ReadRowsRequest;
-import com.google.bigtable.v2.Row;
-import com.google.bigtable.v2.RowFilter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Futures;
-import com.spotify.bigtable.BigtableMock;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import static com.spotify.bigtable.read.AbstractBigtableRead.toExactMatchAnyRegex;
 import static com.spotify.bigtable.read.AbstractBigtableRead.toExactMatchRegex;
 import static org.junit.Assert.assertEquals;
@@ -42,6 +28,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.google.bigtable.v2.Family;
+import com.google.bigtable.v2.ReadRowsRequest;
+import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowFilter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Futures;
+import com.spotify.bigtable.BigtableMock;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import org.junit.Before;
+import org.junit.Test;
+
 public class FamilyReadImplTest {
 
   BigtableMock bigtableMock = BigtableMock.getMock();
@@ -50,7 +49,7 @@ public class FamilyReadImplTest {
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    final RowRead.RowReadImpl rowRead = new RowRead.RowReadImpl(tableRead, "row");
+    final RowRead.RowReadImpl rowRead = tableRead.row("row");
     familyRead = new FamilyRead.FamilyReadImpl(rowRead, "family");
   }
 

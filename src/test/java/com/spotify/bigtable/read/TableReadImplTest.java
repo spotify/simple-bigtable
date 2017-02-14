@@ -19,15 +19,21 @@
 
 package com.spotify.bigtable.read;
 
+import static org.junit.Assert.assertEquals;
+
+import com.google.appengine.repackaged.com.google.common.collect.Sets;
+import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowSet;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
 
 public class TableReadImplTest {
 
@@ -39,9 +45,14 @@ public class TableReadImplTest {
     tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
   }
 
+  private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
+    assertEquals(bigtableMock.getFullTableName("table"), readRequest.getTableName());
+  }
+
   @Test
   public void testRow() throws Exception {
-    final RowRead.RowReadImpl row = (RowRead.RowReadImpl) tableRead.row("row");
+    final RowRead.RowReadImpl row = tableRead.row("row");
+    verifyReadRequest(row.readRequest());
     assertEquals("row", row.readRequest.getRows().getRowKeys(0).toStringUtf8());
     assertEquals(1, row.readRequest.getRows().getRowKeysCount());
     assertEquals(0, row.readRequest.getRows().getRowRangesCount());
@@ -51,14 +62,25 @@ public class TableReadImplTest {
 
   @Test
   public void testRows() throws Exception {
-    final RowsRead.RowsReadImpl rows = (RowsRead.RowsReadImpl) tableRead.rows();
-    assertEquals(tableRead.readRequest().build(), rows.readRequest().build());
+    final RowsRead.RowsReadImpl rows = tableRead.rows();
+    verifyReadRequest(rows.readRequest());
+    assertEquals(RowSet.getDefaultInstance(), rows.readRequest().getRows());
     assertEquals(bigtableMock.getMockedDataClient(), rows.getClient());
   }
 
   @Test
-  public void testReadRequest() throws Exception {
-    assertEquals(bigtableMock.getFullTableName("table"), tableRead.readRequest().getTableName());
+  public void testRowsCollection() throws Exception {
+    final ImmutableSet<String> rowKeys = ImmutableSet.of("row1", "row2");
+    final RowRead.RowReadImpl rows = tableRead.rows(rowKeys);
+    final ReadRowsRequest.Builder readRequest = rows.readRequest();
+    verifyReadRequest(readRequest);
+    final Set<ByteString> rowKeysBytes =
+        rowKeys.stream().map(ByteString::copyFromUtf8).collect(Collectors.toSet());
+    assertEquals(rowKeysBytes, Sets.newHashSet(readRequest.getRows().getRowKeysList()));
+    assertEquals(2, readRequest.getRows().getRowKeysCount());
+    assertEquals(0, readRequest.getRows().getRowRangesCount());
+    assertEquals(2, readRequest.getRowsLimit());
+    assertEquals(bigtableMock.getMockedDataClient(), rows.getClient());
   }
 
   @Test

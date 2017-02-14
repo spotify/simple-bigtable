@@ -19,24 +19,25 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v2.ReadRowsRequest;
-import com.google.bigtable.v2.Row;
-import com.google.cloud.bigtable.grpc.scanner.ResultScanner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Futures;
-import com.spotify.bigtable.BigtableMock;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import java.util.Collections;
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import com.google.bigtable.v2.ReadRowsRequest;
+import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowSet;
+import com.google.cloud.bigtable.grpc.scanner.ResultScanner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Futures;
+import com.google.protobuf.ByteString;
+import com.spotify.bigtable.BigtableMock;
+import java.util.Collections;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public class RowsReadImplTest {
 
@@ -46,7 +47,7 @@ public class RowsReadImplTest {
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    rowsRead = new RowsRead.RowsReadImpl(tableRead);
+    rowsRead = tableRead.rows();
   }
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
@@ -90,11 +91,48 @@ public class RowsReadImplTest {
 
   @Test
   public void testLimit() throws Exception {
-    final RowsRead.RowsReadImpl read = (RowsRead.RowsReadImpl) rowsRead.limit(10);
+    final RowsRead.RowsReadImpl read = rowsRead.limit(10);
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
 
     assertEquals(10, readRequest.getRowsLimit());
+    assertEquals(RowSet.getDefaultInstance(), readRequest.getRows());
+  }
+
+  @Test
+  public void testRowRangeOpen() throws Exception {
+    final RowsRead.RowsReadImpl rows =
+        this.rowsRead.addRowRangeOpen(ByteString.copyFromUtf8("a"), ByteString.copyFromUtf8("z"));
+
+    final ReadRowsRequest.Builder readRequest = rows.readRequest();
+    verifyReadRequest(readRequest);
+    final RowSet rowSet = readRequest.getRows();
+    assertEquals(0, rowSet.getRowKeysCount());
+    assertEquals(1, rowSet.getRowRangesCount());
+    assertEquals("a", rowSet.getRowRanges(0).getStartKeyOpen().toStringUtf8());
+    assertEquals("z", rowSet.getRowRanges(0).getEndKeyOpen().toStringUtf8());
+    assertEquals(ByteString.EMPTY, rowSet.getRowRanges(0).getStartKeyClosed());
+    assertEquals(ByteString.EMPTY, rowSet.getRowRanges(0).getEndKeyClosed());
+    assertEquals(0, readRequest.getRowsLimit());
+    assertEquals(bigtableMock.getMockedDataClient(), rows.getClient());
+  }
+
+  @Test
+  public void testRowRangeClosed() throws Exception {
+    final RowsRead.RowsReadImpl rows =
+        this.rowsRead.addRowRangeClosed(ByteString.copyFromUtf8("a"), ByteString.copyFromUtf8("z"));
+
+    final ReadRowsRequest.Builder readRequest = rows.readRequest();
+    verifyReadRequest(readRequest);
+    final RowSet rowSet = readRequest.getRows();
+    assertEquals(0, rowSet.getRowKeysCount());
+    assertEquals(1, rowSet.getRowRangesCount());
+    assertEquals("a", rowSet.getRowRanges(0).getStartKeyClosed().toStringUtf8());
+    assertEquals("z", rowSet.getRowRanges(0).getEndKeyClosed().toStringUtf8());
+    assertEquals(ByteString.EMPTY, rowSet.getRowRanges(0).getStartKeyOpen());
+    assertEquals(ByteString.EMPTY, rowSet.getRowRanges(0).getEndKeyOpen());
+    assertEquals(0, readRequest.getRowsLimit());
+    assertEquals(bigtableMock.getMockedDataClient(), rows.getClient());
   }
 }

@@ -19,11 +19,8 @@
 
 package com.spotify.bigtable.read;
 
-import com.google.bigtable.v2.RowSet;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
-import com.google.protobuf.ByteString;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -45,10 +42,8 @@ public interface RowRead extends BigtableRead<Optional<Row>> {
 
   class RowReadImpl extends AbstractBigtableRead<List<Row>, Optional<Row>> implements RowRead {
 
-    public RowReadImpl(final TableRead.TableReadImpl tableRead, final String row) {
-      super(tableRead);
-      readRequest.setRows(RowSet.newBuilder().addRowKeys(ByteString.copyFromUtf8(row)));
-      readRequest.setRowsLimit(1);
+    public RowReadImpl(final RowsRead.RowsReadImpl rowsRead) {
+      super(rowsRead);
     }
 
     @Override
