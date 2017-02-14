@@ -20,18 +20,29 @@
 package com.spotify.bigtable.read;
 
 import com.google.bigtable.v2.Row;
+import com.google.bigtable.v2.RowRange;
+import com.google.bigtable.v2.RowSet;
 import com.google.cloud.bigtable.grpc.scanner.ResultScanner;
 import com.google.protobuf.ByteString;
+import java.util.Collection;
 import java.util.List;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * RowsRead is an interface for reading a set of rows.
+ */
 public interface RowsRead extends BigtableRead<List<Row>> {
+
+  RowsRead addKeys(final Collection<String> rowKeys);
 
   RowsRead limit(final long limit);
 
-  RowsRead startKey(final ByteString startKey);
+  RowsRead addRowRangeOpen(final ByteString startKeyOpen, final ByteString endKeyOpen);
 
-  RowsRead endKey(final ByteString endKey);
+  RowsRead addRowRangeClosed(final ByteString startKeyClosed, final ByteString endKeyClosed);
+
+  RowRead withinRow();
 
   ResultScanner<Row> execute();
 
@@ -39,6 +50,7 @@ public interface RowsRead extends BigtableRead<List<Row>> {
 
     public RowsReadImpl(final TableRead.TableReadImpl tableRead) {
       super(tableRead);
+      readRequest.setRows(RowSet.getDefaultInstance());
     }
 
     @Override
@@ -47,19 +59,40 @@ public interface RowsRead extends BigtableRead<List<Row>> {
     }
 
     @Override
-    public RowsRead limit(final long limit) {
+    public RowsReadImpl addKeys(Collection<String> rowKeys) {
+      final Set<ByteString> iterator =
+          rowKeys.stream().map(ByteString::copyFromUtf8).collect(Collectors.toSet());
+      readRequest.setRows(readRequest.getRowsBuilder().addAllRowKeys(iterator));
+      return this;
+    }
+
+    @Override
+    public RowsReadImpl limit(final long limit) {
       readRequest.setRowsLimit(limit);
       return this;
     }
 
     @Override
-    public RowsRead startKey(final ByteString startKey) {
-      throw new NotImplementedException();
+    public RowsReadImpl addRowRangeOpen(final ByteString startKeyOpen,
+                                        final ByteString endKeyOpen) {
+      final RowRange.Builder rowRange =
+          RowRange.newBuilder().setStartKeyOpen(startKeyOpen).setEndKeyOpen(endKeyOpen);
+      readRequest.setRows(readRequest.getRowsBuilder().addRowRanges(rowRange));
+      return this;
     }
 
     @Override
-    public RowsRead endKey(final ByteString endKey) {
-      throw new NotImplementedException();
+    public RowsReadImpl addRowRangeClosed(final ByteString startKeyClosed,
+                                          final ByteString endKeyClosed) {
+      final RowRange.Builder rowRange =
+          RowRange.newBuilder().setStartKeyClosed(startKeyClosed).setEndKeyClosed(endKeyClosed);
+      readRequest.setRows(readRequest.getRowsBuilder().addRowRanges(rowRange));
+      return this;
+    }
+
+    @Override
+    public RowRead.RowReadImpl withinRow() {
+      return new RowRead.RowReadImpl(this);
     }
 
     @Override

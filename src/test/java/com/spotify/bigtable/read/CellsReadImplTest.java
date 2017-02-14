@@ -19,6 +19,14 @@
 
 package com.spotify.bigtable.read;
 
+import static com.spotify.bigtable.read.AbstractBigtableRead.toExactMatchRegex;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.google.api.client.util.Lists;
 import com.google.bigtable.v2.Cell;
 import com.google.bigtable.v2.Column;
@@ -30,19 +38,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.Collections;
 import java.util.Optional;
-
-import static com.spotify.bigtable.read.AbstractBigtableRead.toExactMatchRegex;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import org.junit.Before;
+import org.junit.Test;
 
 public class CellsReadImplTest {
 
@@ -52,7 +51,7 @@ public class CellsReadImplTest {
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    final RowRead.RowReadImpl rowRead = new RowRead.RowReadImpl(tableRead, "row");
+    final RowRead.RowReadImpl rowRead = tableRead.row("row");
     final FamilyRead.FamilyReadImpl familyRead = new FamilyRead.FamilyReadImpl(rowRead, "family");
     final ColumnRead.ColumnReadImpl columnRead = new ColumnRead.ColumnReadImpl(familyRead, "qualifier");
     cellsRead = new CellsRead.CellsReadImpl(columnRead);

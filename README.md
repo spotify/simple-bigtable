@@ -148,6 +148,29 @@ final ListenableFuture<Optional<Cell>> cells = bigtable.read("my-table")
     .executeAsync();
 ```
 
+Get the latest cell of a between 2 timestamps within a column for multiple rows
+```java
+final ListenableFuture<Optional<Cell>> cells = bigtable.read("my-table")
+    .rows(ImmutableSet.of("row1", "row2"))
+    .column("column-family:column-1") // specify both column family and column qualifier separated by colon
+    .cells()
+    .startTimestampMicros(someTimestamp)
+    .endTimestampMicros(someLatertimestamp)
+    .latest()
+    .executeAsync();
+```
+
+Get all rows between different ranges and with certain specific keys
+```java
+final ListenableFuture<List<Row>> rows = bigtable.read("my-table")
+    .rows()
+    .addRowRangeOpen(myStartKeyOpen, myEndKeyOpen) // add an exclusive range
+    .addRowRangeClosed(myStartKeyClosed, myEndKeyClosed) // add an inclusive range
+    .addKeys(extraKeys) // add some keys you always want
+    .executeAsync();
+```
+Note that currently there is no half open, half closed range.
+
 ## Other Operations
 
 The client supports other Bigtable operations as well, with hopefully the rest of all possible operations coming

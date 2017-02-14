@@ -19,6 +19,13 @@
 
 package com.spotify.bigtable.read;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
@@ -26,18 +33,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.spotify.bigtable.BigtableMock;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.Collections;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import org.junit.Before;
+import org.junit.Test;
 
 public class RowReadImplTest {
 
@@ -47,7 +46,7 @@ public class RowReadImplTest {
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    rowRead = new RowRead.RowReadImpl(tableRead, "row");
+    rowRead = tableRead.row("row");
   }
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {

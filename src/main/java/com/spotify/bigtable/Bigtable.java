@@ -19,6 +19,7 @@
 
 package com.spotify.bigtable;
 
+import com.google.api.client.util.Lists;
 import com.spotify.bigtable.mutate.BigtableMutation;
 import com.spotify.bigtable.mutate.BigtableMutationImpl;
 import com.spotify.bigtable.read.TableRead;
@@ -93,7 +94,7 @@ public class Bigtable {
   }
 
   /**
-   * Sample row keys from a table.
+   * Sample row addKeys from a table.
    *
    * @param table table name
    * @return BigtableSampleRowKeys

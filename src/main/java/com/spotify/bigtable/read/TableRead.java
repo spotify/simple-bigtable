@@ -24,14 +24,24 @@ import com.google.bigtable.v2.Row;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
-
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public interface TableRead {
 
+  /**
+   * Read from a single row with given key.
+   *
+   * @param row row key
+   * @return Row Read implementation
+   */
   RowRead row(final String row);
 
+  RowRead rows(final Collection<String> rowKeys);
+
   RowsRead rows();
+
 
   class TableReadImpl extends BigtableTable implements TableRead, BigtableRead.Internal<List<Row>> {
 
@@ -39,13 +49,18 @@ public interface TableRead {
       super(bigtable, table);
     }
 
-    public RowRead row(final String row) {
-      return new RowRead.RowReadImpl(this, row);
+    public RowRead.RowReadImpl row(final String row) {
+      return rows(Collections.singleton(row));
     }
 
     @Override
-    public RowsRead rows() {
+    public RowsRead.RowsReadImpl rows() {
       return new RowsRead.RowsReadImpl(this);
+    }
+
+    @Override
+    public RowRead.RowReadImpl rows(final Collection<String> rowKeys) {
+      return rows().addKeys(rowKeys).limit(rowKeys.size()).withinRow();
     }
 
     public ReadRowsRequest.Builder readRequest() {
