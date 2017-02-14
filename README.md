@@ -275,3 +275,8 @@ to include.
  about that family object, it would be much nicer if the Column object also contained the family the column belongs
  to. Perhaps a custom Column object can be made.
 - Pass in a metrics registry and get some metrics for free on how long your requests to bigtable are taking.
+
+## Code of conduct
+This project adheres to the [Open Code of Conduct][code-of-conduct]. By participating, you are expected to honor this code.
+
+[code-of-conduct]: https://github.com/spotify/code-of-conduct/blob/master/code-of-conduct.md
