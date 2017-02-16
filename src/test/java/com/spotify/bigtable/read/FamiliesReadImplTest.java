@@ -19,6 +19,12 @@
 
 package com.spotify.bigtable.read;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.google.api.client.util.Lists;
 import com.google.bigtable.v2.Family;
 import com.google.bigtable.v2.ReadRowsRequest;
@@ -26,27 +32,19 @@ import com.google.bigtable.v2.Row;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.spotify.bigtable.BigtableMock;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
 public class FamiliesReadImplTest {
   BigtableMock bigtableMock = BigtableMock.getMock();
-  FamiliesRead.FamiliesReadImpl familiesRead;
+  ReadFamilies.FamiliesWithinRowRead.ReadImpl familiesRead;
 
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    final RowRead.RowReadImpl rowRead = tableRead.row("row");
-    familiesRead = new FamiliesRead.FamiliesReadImpl(rowRead);
+    familiesRead = new ReadFamilies.FamiliesWithinRowRead.ReadImpl(tableRead.row("row"));
   }
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
@@ -64,12 +62,12 @@ public class FamiliesReadImplTest {
 
   @Test
   public void testParentDataTypeToDataType() throws Exception {
-    assertEquals(Lists.newArrayList(), familiesRead.parentDataTypeToDataType(Optional.empty()));
-    assertEquals(Lists.newArrayList(), familiesRead.parentDataTypeToDataType(Optional.of(Row.getDefaultInstance())));
+    assertEquals(Lists.newArrayList(), familiesRead.parentTypeToCurrentType().apply(Optional.empty()));
+    assertEquals(Lists.newArrayList(), familiesRead.parentTypeToCurrentType().apply(Optional.of(Row.getDefaultInstance())));
 
     final Family family = Family.getDefaultInstance();
     final Row row = Row.newBuilder().addFamilies(family).build();
-    assertEquals(ImmutableList.of(family), familiesRead.parentDataTypeToDataType(Optional.of(row)));
+    assertEquals(ImmutableList.of(family), familiesRead.parentTypeToCurrentType().apply(Optional.of(row)));
   }
 
   @Test

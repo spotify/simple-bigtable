@@ -33,6 +33,9 @@ import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.RowFilter;
 import com.google.common.util.concurrent.Futures;
 import com.spotify.bigtable.BigtableMock;
+import com.spotify.bigtable.read.ReadCell.CellWithinCellsRead;
+import com.spotify.bigtable.read.ReadCells.CellsWithinColumnRead;
+import com.spotify.bigtable.read.ReadColumn.ColumnWithinFamilyRead;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.Before;
@@ -41,14 +44,12 @@ import org.junit.Test;
 public class ColumnReadImplTest {
 
   BigtableMock bigtableMock = BigtableMock.getMock();
-  ColumnRead.ColumnReadImpl columnRead;
+  ColumnWithinFamilyRead.ReadImpl columnRead;
 
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    final RowRead.RowReadImpl rowRead = tableRead.row("row");
-    final FamilyRead.FamilyReadImpl familyRead = new FamilyRead.FamilyReadImpl(rowRead, "family");
-    columnRead = new ColumnRead.ColumnReadImpl(familyRead, "qualifier");
+    columnRead = (ColumnWithinFamilyRead.ReadImpl) tableRead.row("row").family("family").columnQualifier("qualifier");
   }
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
@@ -70,12 +71,12 @@ public class ColumnReadImplTest {
 
   @Test
   public void testParentDataTypeToDataType() throws Exception {
-    assertEquals(Optional.empty(), columnRead.parentDataTypeToDataType(Optional.empty()));
-    assertEquals(Optional.empty(), columnRead.parentDataTypeToDataType(Optional.of(Family.getDefaultInstance())));
+    assertEquals(Optional.empty(), columnRead.parentTypeToCurrentType().apply(Optional.empty()));
+    assertEquals(Optional.empty(), columnRead.parentTypeToCurrentType().apply(Optional.of(Family.getDefaultInstance())));
 
     final Column column = Column.getDefaultInstance();
     final Family family = Family.newBuilder().addColumns(column).build();
-    assertEquals(Optional.of(column), columnRead.parentDataTypeToDataType(Optional.of(family)));
+    assertEquals(Optional.of(column), columnRead.parentTypeToCurrentType().apply(Optional.of(family)));
   }
 
   @Test
@@ -93,7 +94,7 @@ public class ColumnReadImplTest {
 
   @Test
   public void testLatestCell() throws Exception {
-    final CellRead.CellReadImpl read = (CellRead.CellReadImpl) columnRead.latestCell();
+    final CellWithinCellsRead.ReadImpl read = (CellWithinCellsRead.ReadImpl) columnRead.latestCell();
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -106,7 +107,7 @@ public class ColumnReadImplTest {
 
   @Test
   public void testCells() throws Exception {
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) columnRead.cells();
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) columnRead.cells();
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);

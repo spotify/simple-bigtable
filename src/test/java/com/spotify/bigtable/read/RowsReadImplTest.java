@@ -42,7 +42,7 @@ import org.mockito.Mockito;
 public class RowsReadImplTest {
 
   BigtableMock bigtableMock = BigtableMock.getMock();
-  RowsRead.RowsReadImpl rowsRead;
+  ReadRows.RowsReadImpl rowsRead;
 
   @Before
   public void setUp() throws Exception {
@@ -57,7 +57,7 @@ public class RowsReadImplTest {
   @Test
   public void testParentDataTypeToDataType() throws Exception {
     final List<Row> rows = ImmutableList.of(Row.getDefaultInstance());
-    assertEquals(rows, rowsRead.parentDataTypeToDataType(rows));
+    assertEquals(rows, rowsRead.toDataType().apply(rows));
   }
 
   @Test
@@ -91,7 +91,7 @@ public class RowsReadImplTest {
 
   @Test
   public void testLimit() throws Exception {
-    final RowsRead.RowsReadImpl read = rowsRead.limit(10);
+    final ReadRows.RowsReadImpl read = rowsRead.limit(10);
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -102,7 +102,7 @@ public class RowsReadImplTest {
 
   @Test
   public void testRowRangeOpen() throws Exception {
-    final RowsRead.RowsReadImpl rows =
+    final ReadRows.RowsReadImpl rows =
         this.rowsRead.addRowRangeOpen(ByteString.copyFromUtf8("a"), ByteString.copyFromUtf8("z"));
 
     final ReadRowsRequest.Builder readRequest = rows.readRequest();
@@ -120,7 +120,7 @@ public class RowsReadImplTest {
 
   @Test
   public void testRowRangeClosed() throws Exception {
-    final RowsRead.RowsReadImpl rows =
+    final ReadRows.RowsReadImpl rows =
         this.rowsRead.addRowRangeClosed(ByteString.copyFromUtf8("a"), ByteString.copyFromUtf8("z"));
 
     final ReadRowsRequest.Builder readRequest = rows.readRequest();

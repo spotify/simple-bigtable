@@ -36,7 +36,7 @@ String fullTableName = String.format("projects/%s/zones/%s/clusters/%s/tables/%s
         projectId,
         zone,
         cluster,
-        "my-table");
+        "table");
 
 // Could also use a filter chain, but you can't actually set all the filters within the same RowFilter object
 // without a merge or chain of some sort
@@ -46,7 +46,7 @@ filter.mergeFrom(RowFilter.newBuilder().setCellsPerColumnLimitFilter(1).build())
 
 final ReadRowsRequest readRowsRequest = ReadRowsRequest.newBuilder()
         .setTableName(fullTableName)
-        .setRowKey(ByteString.copyFromUtf8("my-row"))
+        .setRowKey(ByteString.copyFromUtf8("row"))
         .setNumRowsLimit(1)
         .setFilter(filter.build())
         .build();
@@ -73,9 +73,9 @@ String cluster;
 BigtableSession session;
 
 Bigtable bigtable = new Bigtable(session, projectId, zone, cluster);
-final ListenableFuture<Optional<Cell>> cell = bigtable.read("my-table")
-    .row("my-row")
-    .column("column-family:column-1") // specify both column family and column qualifier separated by colon
+final ListenableFuture<Optional<Cell>> cell = bigtable.read("table")
+    .row("row")
+    .column("family:qualifier") // specify both column family and column qualifier separated by colon
     .latestCell()
     .executeAsync();
 ```
@@ -87,34 +87,36 @@ The goal of this client is to make the most tedious and common interactions with
 
 Get full column family within row
 ```java
-final ListenableFuture<Optional<Family>> family = bigtable.read("my-table")
-    .row("my-row")
-    .family("my-family")
+final ListenableFuture<Optional<Family>> family = bigtable.read("table")
+    .row("row")
+    .family("family")
     .executeAsync();
 ```
 
 Get multiple columns within a row (Currently all need to be in the same column family but hopefully that gets fixed)
 ```java
-// Single get columns line
-final ListenableFuture<List<Column>> family = bigtable.read("my-table")
-    .row("my-row")
-    .columns(Lists.newArrayList("my-family:qualifier-1", "my-family:qualifier-2"))
+// Get the entire column
+final ListenableFuture<List<Column>> family = bigtable.read("table")
+    .row("row")
+    .family("family")
+    .columnQualifiers(Lists.newArrayList("qualifier-1", "qualifier-2"))
     .executeAsync();
 
-// More explicitly within a single column family
-final ListenableFuture<List<Column>> family = bigtable.read("my-table")
-    .row("my-row")
-    .family("my-family")
-    .columnQualifiers(Lists.newArrayList("qualifier-1", "qualifier-2"))
+// Get the latest cell in each column
+final ListenableFuture<List<Column>> family = bigtable.read("table")
+    .row("row")
+    .family("family")
+    .columnQualifiers(Lists.newArrayList("qualifier1", "qualifier2"))
+    .latestCell()
     .executeAsync();
 ```
 
 Get columns within a single family and within column qualifier range
 ```java
-final ListenableFuture<List<Column>> columns = bigtable.read("my-table")
-    .row("my-row")
+final ListenableFuture<List<Column>> columns = bigtable.read("table")
+    .row("row")
+    .family("family")
     .columns()
-    .family("column-family")
     .startQualifierInclusive(startBytestring)
     .endQualifierExclusive(endBytestring)
     .executeAsync();
@@ -122,9 +124,9 @@ final ListenableFuture<List<Column>> columns = bigtable.read("my-table")
 
 Get cells between certain timestamps within a column
 ```java
-final ListenableFuture<List<Cell>> cells = bigtable.read("my-table")
-    .row("my-row")
-    .column("column-family:column-1") // specify both column family and column qualifier separated by colon
+final ListenableFuture<List<Cell>> cells = bigtable.read("table")
+    .row("row")
+    .column("family:qualifier")
     .cells()
     .startTimestampMicros(someTimestamp)
     .endTimestampMicros(someLatertimestamp)
@@ -133,9 +135,9 @@ final ListenableFuture<List<Cell>> cells = bigtable.read("my-table")
 
 Get the latest cell of a certain value within a column
 ```java
-final ListenableFuture<Optional<Cell>> cells = bigtable.read("my-table")
-    .row("my-row")
-    .column("column-family:column-1") // specify both column family and column qualifier separated by colon
+final ListenableFuture<Optional<Cell>> cells = bigtable.read("table")
+    .row("row")
+    .column("family:qualifier")
     .cells()
     .startValueInclusive(myValueByteString)
     .endValueInclusive(myValueByteString)
@@ -145,9 +147,9 @@ final ListenableFuture<Optional<Cell>> cells = bigtable.read("my-table")
 
 Get the latest cell of a between 2 timestamps within a column for multiple rows
 ```java
-final ListenableFuture<Optional<Cell>> cells = bigtable.read("my-table")
+final ListenableFuture<List<Row>> cells = bigtable.read("table")
     .rows(ImmutableSet.of("row1", "row2"))
-    .column("column-family:column-1") // specify both column family and column qualifier separated by colon
+    .column("family:qualifier")
     .cells()
     .startTimestampMicros(someTimestamp)
     .endTimestampMicros(someLatertimestamp)
@@ -155,9 +157,23 @@ final ListenableFuture<Optional<Cell>> cells = bigtable.read("my-table")
     .executeAsync();
 ```
 
-Get all rows between different ranges and with certain specific keys
+Get the multiple column families and column qualifiers (will match all combinations)
 ```java
-final ListenableFuture<List<Row>> rows = bigtable.read("my-table")
+final ListenableFuture<List<Row>> cells = bigtable.read("table")
+    .row("row")
+    .families(ImmutableSet.of("family1, family2"))
+    .columnQualifiers(ImmutableSet.of("qualifier1", "qualifier2")
+    .cells()
+    .startTimestampMicros(someTimestamp)
+    .endTimestampMicros(someLatertimestamp)
+    .latest()
+    .executeAsync();
+```
+
+Get all rows between different ranges or with certain specific keys
+(these functions add rows to the row set, instead of filtering)
+```java
+final ListenableFuture<List<Row>> rows = bigtable.read("table")
     .rows()
     .addRowRangeOpen(myStartKeyOpen, myEndKeyOpen) // add an exclusive range
     .addRowRangeClosed(myStartKeyClosed, myEndKeyClosed) // add an inclusive range
@@ -178,24 +194,24 @@ writing new values as well as deleting a column, column family, or an entire row
 
 Write a new cell within a column
 ```java
-final ListenableFuture<Empty> mutation = bigtable.mutateRow("my-table", "my-row")
-    .write("column-family:column-qualifier", ByteString.copyFromUtf8("value"))
+final ListenableFuture<Empty> mutation = bigtable.mutateRow("table", "row")
+    .write("family:qualifier", ByteString.copyFromUtf8("value"))
     .executeAync()
 ```
 
 Perform multiple writes in different columns setting an explicit timestamp on some
 ```java
-final ListenableFuture<Empty> mutation = bigtable.mutateRow("my-table", "my-row")
-    .write("column-family:column-qualifier", ByteString.copyFromUtf8("value-1"), timestampMicros)
-    .write("column-family", "column-qualifier", ByteString.copyFromUtf8("value-2"))
+final ListenableFuture<Empty> mutation = bigtable.mutateRow("table", "row")
+    .write("family:qualifier", ByteString.copyFromUtf8("value-1"), timestampMicros)
+    .write("family", "qualifier", ByteString.copyFromUtf8("value-2"))
     .executeAync()
 ```
 
 Delete a column and then write to the same column
 ```java
-final Empty mutation = bigtable.mutateRow("my-table", "my-row")
-    .deleteColumn("column-family:column-qualifier")
-    .write("column-family:column-qualifier", ByteString.copyFromUtf8("brand-new-value"))
+final Empty mutation = bigtable.mutateRow("table", "row")
+    .deleteColumn("family:qualifier")
+    .write("family:qualifier", ByteString.copyFromUtf8("brand-new-value"))
     .execute()
 ```
 
@@ -207,12 +223,12 @@ with multiple ReadModifyWrites possible in a single request.
 
 Increment a couple counter columns and append a value to another
 ```java
-bigtable.readModifyWrite("my-table", "my-row")
+bigtable.readModifyWrite("table", "row")
     .read("request-numbers:number-1")
     .thenIncrementAmount(1L)
     .read("request-numbers:number-2")
     .thenIncrementAmount(5L)
-    .read("column-family:values")
+    .read("family:values")
     .thenAppendValue(ByteString.copyFromUtf8("new-value"))
     .executeAsync();
 ```
@@ -221,7 +237,7 @@ bigtable.readModifyWrite("my-table", "my-row")
 
 Sample some row keys from a table.
 ```java
-final List<SampleRowKeysResponse> sampleRowKeys = bigtable.sampleRowKeys("my-table").execute();
+final List<SampleRowKeysResponse> sampleRowKeys = bigtable.sampleRowKeys("table").execute();
 ```
 
 ### CheckAndMutateRow - NOT YET IMPLEMENTED
@@ -231,21 +247,21 @@ here are some ideas on how this operation might be implemented in the future.
 
 Have the check specified like a read, then allow mutations to be added.
 ```java
-bigtable.checkAndMutateRow("my-table", "my-row")
-    .column("column-family:column-qualifier")
+bigtable.checkAndMutateRow("table", "row")
+    .column("family:qualifier")
     .cells()
     .endTimestampMicros(timestamp)
     .ifExists()
-    .deleteColumn("column-family:column-qualifier")
-    .write("column-family:column-qualifier", "had-data")
+    .deleteColumn("family:qualifier")
+    .write("family:qualifier", "had-data")
     .ifDoesNotExist()
-    .write("column-family:column-qualifier", "did-not-have-data")
+    .write("family:qualifier", "did-not-have-data")
     .executeAsync();
 ```
 
 Pass in Bigtable protobuf objects, kind of against the purpose of the library but keeps things simple.
 ```java
-bigtable.checkAndMutateRow("my-table", "my-row")
+bigtable.checkAndMutateRow("table", "row")
     .rowFilter(someRowFilter)
     .ifExists(someMutation)
     .ifExists(someOtherMutation)

@@ -28,11 +28,11 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.bigtable.v2.Cell;
-import com.google.bigtable.v2.Column;
 import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.RowFilter;
 import com.google.common.util.concurrent.Futures;
 import com.spotify.bigtable.BigtableMock;
+import com.spotify.bigtable.read.ReadCell.CellWithinCellsRead;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.Before;
@@ -41,15 +41,15 @@ import org.junit.Test;
 public class CellReadImplTest {
 
   BigtableMock bigtableMock = BigtableMock.getMock();
-  CellRead.CellReadImpl cellRead;
+  CellWithinCellsRead.ReadImpl cellRead;
 
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    final RowRead.RowReadImpl rowRead = tableRead.row("row");
-    final FamilyRead.FamilyReadImpl familyRead = new FamilyRead.FamilyReadImpl(rowRead, "family");
-    final ColumnRead.ColumnReadImpl columnRead = new ColumnRead.ColumnReadImpl(familyRead, "qualifier");
-    cellRead = new CellRead.CellReadImpl(columnRead);
+    cellRead = (CellWithinCellsRead.ReadImpl) tableRead.row("row")
+        .family("family")
+        .columnQualifier("qualifier")
+        .latestCell();
   }
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
@@ -71,12 +71,10 @@ public class CellReadImplTest {
 
   @Test
   public void testParentDataTypeToDataType() throws Exception {
-    assertEquals(Optional.empty(), cellRead.parentDataTypeToDataType(Optional.empty()));
-    assertEquals(Optional.empty(), cellRead.parentDataTypeToDataType(Optional.of(Column.getDefaultInstance())));
+    assertEquals(Optional.empty(), cellRead.parentTypeToCurrentType().apply(Collections.emptyList()));
 
     final Cell cell = Cell.getDefaultInstance();
-    final Column column = Column.newBuilder().addCells(cell).build();
-    assertEquals(Optional.of(cell), cellRead.parentDataTypeToDataType(Optional.of(column)));
+    assertEquals(Optional.of(cell), cellRead.parentTypeToCurrentType().apply(Collections.singletonList(cell)));
   }
 
   @Test

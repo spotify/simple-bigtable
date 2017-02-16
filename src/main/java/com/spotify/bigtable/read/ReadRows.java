@@ -24,38 +24,42 @@ import com.google.bigtable.v2.RowRange;
 import com.google.bigtable.v2.RowSet;
 import com.google.cloud.bigtable.grpc.scanner.ResultScanner;
 import com.google.protobuf.ByteString;
+import com.spotify.bigtable.read.ReadColumn.ColumnWithinRowsRead;
+import com.spotify.bigtable.read.ReadFamilies.FamiliesWithinRowsRead;
+import com.spotify.bigtable.read.ReadFamily.FamilyWithinRowsRead;
+import com.spotify.bigtable.read.ReadRow.RowRead;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * RowsRead is an interface for reading a set of rows.
  */
-public interface RowsRead extends BigtableRead<List<Row>> {
+public class ReadRows {
 
-  RowsRead addKeys(final Collection<String> rowKeys);
+  public interface RowsRead extends RowRead<
+      FamilyWithinRowsRead, FamiliesWithinRowsRead, ColumnWithinRowsRead, List<Row>> {
 
-  RowsRead limit(final long limit);
+    RowsRead addKeys(final Collection<String> rowKeys);
 
-  RowsRead addRowRangeOpen(final ByteString startKeyOpen, final ByteString endKeyOpen);
+    RowsRead limit(final long limit);
 
-  RowsRead addRowRangeClosed(final ByteString startKeyClosed, final ByteString endKeyClosed);
+    RowsRead addRowRangeOpen(final ByteString startKeyOpen, final ByteString endKeyOpen);
 
-  RowRead withinRow();
+    RowsRead addRowRangeClosed(final ByteString startKeyClosed, final ByteString endKeyClosed);
 
-  ResultScanner<Row> execute();
+    ResultScanner<Row> execute();
 
-  class RowsReadImpl extends AbstractBigtableRead<List<Row>, List<Row>> implements RowsRead {
+  }
+
+  static class RowsReadImpl extends AbstractBigtableRead<List<Row>, List<Row>> implements RowsRead {
 
     public RowsReadImpl(final TableRead.TableReadImpl tableRead) {
       super(tableRead);
       readRequest.setRows(RowSet.getDefaultInstance());
-    }
-
-    @Override
-    protected List<Row> parentDataTypeToDataType(final List<Row> rows) {
-      return rows;
     }
 
     @Override
@@ -91,13 +95,34 @@ public interface RowsRead extends BigtableRead<List<Row>> {
     }
 
     @Override
-    public RowRead.RowReadImpl withinRow() {
-      return new RowRead.RowReadImpl(this);
+    public ResultScanner<Row> execute() {
+      return getClient().readRows(readRequest().build());
     }
 
     @Override
-    public ResultScanner<Row> execute() {
-      return getClient().readRows(readRequest().build());
+    public FamilyWithinRowsRead family(final String family) {
+      return new FamilyWithinRowsRead.ReadImpl(this).columnFamily(family);
+    }
+
+    @Override
+    public FamiliesWithinRowsRead familyRegex(final String familyRegex) {
+      return new FamiliesWithinRowsRead.ReadImpl(this).familyRegex(familyRegex);
+    }
+
+    @Override
+    public FamiliesWithinRowsRead families(final Collection<String> families) {
+      return familyRegex(toExactMatchAnyRegex(families));
+    }
+
+    @Override
+    public ColumnWithinRowsRead column(final String column) {
+      final List<String> parts = Arrays.asList(column.split(":", 2));
+      return family(parts.get(0)).columnQualifier(parts.get(1));
+    }
+
+    @Override
+    protected Function<List<Row>, List<Row>> parentTypeToCurrentType() {
+      return Function.identity();
     }
   }
 }

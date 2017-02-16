@@ -30,7 +30,6 @@ import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.spotify.bigtable.BigtableMock;
 import java.util.Collections;
@@ -41,7 +40,7 @@ import org.junit.Test;
 public class RowReadImplTest {
 
   BigtableMock bigtableMock = BigtableMock.getMock();
-  RowRead.RowReadImpl rowRead;
+  ReadRow.RowSingleRead.ReadImpl rowRead;
 
   @Before
   public void setUp() throws Exception {
@@ -75,15 +74,16 @@ public class RowReadImplTest {
 
   @Test
   public void testToDataType() throws Exception {
-    assertFalse(rowRead.toDataType(ImmutableList.of()).isPresent());
+    assertFalse(rowRead.toDataType().apply(ImmutableList.of()).isPresent());
 
     final Row row = Row.getDefaultInstance();
-    assertEquals(row, rowRead.toDataType(ImmutableList.of(row)).get());
+    assertEquals(row, rowRead.toDataType().apply(ImmutableList.of(row)).get());
   }
 
   @Test
   public void testFamily() throws Exception {
-    final FamilyRead.FamilyReadImpl family = (FamilyRead.FamilyReadImpl) rowRead.family("family");
+    final ReadFamily.FamilyWithinRowRead.ReadImpl family =
+        (ReadFamily.FamilyWithinRowRead.ReadImpl) rowRead.family("family");
 
     final ReadRowsRequest.Builder readRequest = family.readRequest();
     verifyReadRequest(readRequest);
@@ -95,7 +95,8 @@ public class RowReadImplTest {
 
   @Test
   public void testFamilyRegex() throws Exception {
-    final FamiliesRead.FamiliesReadImpl families = (FamiliesRead.FamiliesReadImpl) rowRead.familyRegex("family-regex");
+    final ReadFamilies.FamiliesWithinRowRead.ReadImpl families =
+        (ReadFamilies.FamiliesWithinRowRead.ReadImpl) rowRead.familyRegex("family-regex");
 
     final ReadRowsRequest.Builder readRequest = families.readRequest();
     verifyReadRequest(readRequest);
@@ -108,7 +109,8 @@ public class RowReadImplTest {
   @Test
   public void testFamilies() throws Exception {
     final List<String> familyNames = ImmutableList.of("family1", "family2");
-    final FamiliesRead.FamiliesReadImpl families = (FamiliesRead.FamiliesReadImpl) rowRead.families(familyNames);
+    final ReadFamilies.FamiliesWithinRowRead.ReadImpl families =
+        (ReadFamilies.FamiliesWithinRowRead.ReadImpl) rowRead.families(familyNames);
 
     final ReadRowsRequest.Builder readRequest = families.readRequest();
     verifyReadRequest(readRequest);
@@ -120,7 +122,8 @@ public class RowReadImplTest {
 
   @Test
   public void testColumn() throws Exception {
-    final ColumnRead.ColumnReadImpl column = (ColumnRead.ColumnReadImpl) rowRead.column("family:qualifier");
+    final ReadColumn.ColumnWithinFamilyRead.ReadImpl column =
+        (ReadColumn.ColumnWithinFamilyRead.ReadImpl) rowRead.column("family:qualifier");
 
     final ReadRowsRequest.Builder readRequest = column.readRequest();
     verifyReadRequest(readRequest);
@@ -130,28 +133,5 @@ public class RowReadImplTest {
     assertEquals(AbstractBigtableRead.toExactMatchRegex("qualifier"), readRequest.getFilter().getChain().getFilters(2).getColumnQualifierRegexFilter().toStringUtf8());
     assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().toBuilder().clearChain().build()
     );
-  }
-
-  @Test
-  public void testColumns() throws Exception {
-    final ColumnsRead.ColumnsReadImpl columns = (ColumnsRead.ColumnsReadImpl) rowRead.columns();
-
-    final ReadRowsRequest.Builder readRequest = columns.readRequest();
-    verifyReadRequest(readRequest);
-    assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter());
-  }
-
-  @Test
-  public void testColumnsList() throws Exception {
-    final ColumnsRead.ColumnsReadImpl columns = (ColumnsRead.ColumnsReadImpl) rowRead.columns(Lists.newArrayList("family:qualifier1", "family:qualifier2"));
-
-    final ReadRowsRequest.Builder readRequest = columns.readRequest();
-    verifyReadRequest(readRequest);
-    final RowFilter.Chain chain = readRequest.getFilter().getChain();
-    assertEquals(3, chain.getFiltersCount());
-    assertEquals(RowFilter.getDefaultInstance(), chain.getFilters(0));
-    assertEquals(AbstractBigtableRead.toExactMatchRegex("family"), chain.getFilters(1).getFamilyNameRegexFilter());
-    assertEquals(AbstractBigtableRead.toExactMatchAnyRegex(Lists.newArrayList("qualifier1", "qualifier2")), chain.getFilters(2).getColumnQualifierRegexFilter().toStringUtf8());
-    assertEquals(RowFilter.getDefaultInstance(), readRequest.getFilter().toBuilder().clearChain().build());
   }
 }

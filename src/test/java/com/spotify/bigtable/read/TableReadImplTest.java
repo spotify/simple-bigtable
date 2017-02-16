@@ -51,7 +51,7 @@ public class TableReadImplTest {
 
   @Test
   public void testRow() throws Exception {
-    final RowRead.RowReadImpl row = tableRead.row("row");
+    final ReadRow.RowSingleRead.ReadImpl row = tableRead.row("row");
     verifyReadRequest(row.readRequest());
     assertEquals("row", row.readRequest.getRows().getRowKeys(0).toStringUtf8());
     assertEquals(1, row.readRequest.getRows().getRowKeysCount());
@@ -62,7 +62,7 @@ public class TableReadImplTest {
 
   @Test
   public void testRows() throws Exception {
-    final RowsRead.RowsReadImpl rows = tableRead.rows();
+    final ReadRows.RowsReadImpl rows = tableRead.rows();
     verifyReadRequest(rows.readRequest());
     assertEquals(RowSet.getDefaultInstance(), rows.readRequest().getRows());
     assertEquals(bigtableMock.getMockedDataClient(), rows.getClient());
@@ -71,7 +71,7 @@ public class TableReadImplTest {
   @Test
   public void testRowsCollection() throws Exception {
     final ImmutableSet<String> rowKeys = ImmutableSet.of("row1", "row2");
-    final RowRead.RowReadImpl rows = tableRead.rows(rowKeys);
+    final ReadRow.RowMultiRead.ReadImpl rows = tableRead.rows(rowKeys);
     final ReadRowsRequest.Builder readRequest = rows.readRequest();
     verifyReadRequest(readRequest);
     final Set<ByteString> rowKeysBytes =
@@ -91,6 +91,6 @@ public class TableReadImplTest {
   @Test
   public void testToDataType() throws Exception {
     final List<Row> rows = ImmutableList.of(Row.getDefaultInstance());
-    assertEquals(rows, tableRead.toDataType(rows));
+    assertEquals(rows, tableRead.toDataType().apply(rows));
   }
 }

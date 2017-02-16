@@ -19,16 +19,16 @@
 
 package com.spotify.bigtable.read;
 
-import com.spotify.futures.FuturesExtra;
-
 import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
 import com.google.common.util.concurrent.ListenableFuture;
-
+import com.spotify.futures.FuturesExtra;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Abstract class which all Bigtable reads should extend.
@@ -38,14 +38,20 @@ import java.util.Optional;
  * @param <P>  Type of parent read. Example Parent of a Family is a Row which would be Optional of Row
  * @param <T>  Return type of query. Example Optional of Cell, List of Cell, Optional of Row, etc.
  */
-public abstract class AbstractBigtableRead<P, T> implements BigtableRead<T>, BigtableRead.Internal<T> {
+abstract class AbstractBigtableRead<P, T> implements BigtableRead<T>, BigtableRead.Internal<T> {
 
-  protected final BigtableRead.Internal<P> parentRead;
+  final BigtableRead.Internal<P> parentRead;
   protected final ReadRowsRequest.Builder readRequest;
 
   public AbstractBigtableRead(final BigtableRead.Internal<P> parentRead) {
     this.parentRead = parentRead;
     this.readRequest = ReadRowsRequest.newBuilder(parentRead.readRequest().build());
+  }
+
+  @Override
+  public ListenableFuture<T> executeAsync() {
+    final ListenableFuture<List<Row>> future = getClient().readRowsAsync(readRequest().build());
+    return FuturesExtra.syncTransform(future, rows -> toDataType().apply(rows));
   }
 
   @Override
@@ -59,16 +65,11 @@ public abstract class AbstractBigtableRead<P, T> implements BigtableRead<T>, Big
   }
 
   @Override
-  public ListenableFuture<T> executeAsync() {
-    return FuturesExtra.syncTransform(getClient().readRowsAsync(readRequest().build()), this::toDataType);
+  public Function<List<Row>, T> toDataType() {
+    return parentRead.toDataType().andThen(parentTypeToCurrentType());
   }
 
-  @Override
-  public T toDataType(final List<Row> rows) {
-    return parentDataTypeToDataType(parentRead.toDataType(rows));
-  }
-
-  protected abstract T parentDataTypeToDataType(final P parentDataType);
+  protected abstract Function<P, T> parentTypeToCurrentType();
 
   /**
    * Add the row filter to the read rows request. Uses a chain.
@@ -91,7 +92,7 @@ public abstract class AbstractBigtableRead<P, T> implements BigtableRead<T>, Big
     return input;
   }
 
-  protected static String toExactMatchAnyRegex(final List<String> inputs) {
+  protected static String toExactMatchAnyRegex(final Collection<String> inputs) {
     // TODO: Need to escape all special chars in inputs
     return toExactMatchRegex("(" + String.join("|", inputs) + ")");
   }
