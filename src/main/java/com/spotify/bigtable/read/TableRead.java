@@ -24,9 +24,14 @@ import com.google.bigtable.v2.Row;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
+import com.spotify.bigtable.read.ReadRow.RowMultiRead;
+import com.spotify.bigtable.read.ReadRow.RowSingleRead;
+import com.spotify.bigtable.read.ReadRows.RowsRead;
+import com.spotify.bigtable.read.ReadRows.RowsReadImpl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public interface TableRead {
 
@@ -36,9 +41,9 @@ public interface TableRead {
    * @param row row key
    * @return Row Read implementation
    */
-  RowRead row(final String row);
+  RowSingleRead row(final String row);
 
-  RowRead rows(final Collection<String> rowKeys);
+  RowMultiRead rows(final Collection<String> rowKeys);
 
   RowsRead rows();
 
@@ -49,18 +54,20 @@ public interface TableRead {
       super(bigtable, table);
     }
 
-    public RowRead.RowReadImpl row(final String row) {
-      return rows(Collections.singleton(row));
+    public RowSingleRead.ReadImpl row(final String row) {
+      final RowsReadImpl rowsRead = rows().addKeys(Collections.singleton(row)).limit(1);
+      return new RowSingleRead.ReadImpl(rowsRead);
     }
 
     @Override
-    public RowsRead.RowsReadImpl rows() {
-      return new RowsRead.RowsReadImpl(this);
+    public RowsReadImpl rows() {
+      return new RowsReadImpl(this);
     }
 
     @Override
-    public RowRead.RowReadImpl rows(final Collection<String> rowKeys) {
-      return rows().addKeys(rowKeys).limit(rowKeys.size()).withinRow();
+    public RowMultiRead.ReadImpl rows(final Collection<String> rowKeys) {
+      final RowsReadImpl rowsRead = rows().addKeys(rowKeys).limit(rowKeys.size());
+      return new RowMultiRead.ReadImpl(rowsRead);
     }
 
     public ReadRowsRequest.Builder readRequest() {
@@ -72,8 +79,8 @@ public interface TableRead {
     }
 
     @Override
-    public List<Row> toDataType(final List<Row> rows) {
-      return rows;
+    public Function<List<Row>, List<Row>> toDataType() {
+      return Function.identity();
     }
   }
 }

@@ -38,6 +38,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
+import com.spotify.bigtable.read.ReadCell.CellWithinCellsRead;
+import com.spotify.bigtable.read.ReadCells.CellsWithinColumnRead;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.Before;
@@ -46,15 +48,13 @@ import org.junit.Test;
 public class CellsReadImplTest {
 
   BigtableMock bigtableMock = BigtableMock.getMock();
-  CellsRead.CellsReadImpl cellsRead;
+  CellsWithinColumnRead.ReadImpl cellsRead;
 
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    final RowRead.RowReadImpl rowRead = tableRead.row("row");
-    final FamilyRead.FamilyReadImpl familyRead = new FamilyRead.FamilyReadImpl(rowRead, "family");
-    final ColumnRead.ColumnReadImpl columnRead = new ColumnRead.ColumnReadImpl(familyRead, "qualifier");
-    cellsRead = new CellsRead.CellsReadImpl(columnRead);
+    cellsRead = (CellsWithinColumnRead.ReadImpl) tableRead.row("row")
+        .family("family").columnQualifier("qualifier").cells();
   }
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
@@ -75,12 +75,12 @@ public class CellsReadImplTest {
 
   @Test
   public void testParentDataTypeToDataType() throws Exception {
-    assertEquals(Lists.newArrayList(), cellsRead.parentDataTypeToDataType(Optional.empty()));
-    assertEquals(Lists.newArrayList(), cellsRead.parentDataTypeToDataType(Optional.of(Column.getDefaultInstance())));
+    assertEquals(Lists.newArrayList(), cellsRead.parentTypeToCurrentType().apply(Optional.empty()));
+    assertEquals(Lists.newArrayList(), cellsRead.parentTypeToCurrentType().apply(Optional.of(Column.getDefaultInstance())));
 
     final Cell cell = Cell.getDefaultInstance();
     final Column column = Column.newBuilder().addCells(cell).build();
-    assertEquals(ImmutableList.of(cell), cellsRead.parentDataTypeToDataType(Optional.of(column)));
+    assertEquals(ImmutableList.of(cell), cellsRead.parentTypeToCurrentType().apply(Optional.of(column)));
   }
 
   @Test
@@ -99,7 +99,7 @@ public class CellsReadImplTest {
   @Test
   public void testLatest() throws Exception {
     // Test Plain Latest
-    CellRead.CellReadImpl cellRead = (CellRead.CellReadImpl) this.cellsRead.latest();
+    CellWithinCellsRead.ReadImpl cellRead = (CellWithinCellsRead.ReadImpl) this.cellsRead.latest();
 
     ReadRowsRequest.Builder readRequest = cellRead.readRequest();
     verifyReadRequest(readRequest);
@@ -109,7 +109,7 @@ public class CellsReadImplTest {
 
     // Test A Filter Then A Latest
     final TimestampRange timestampRange = TimestampRange.newBuilder().setStartTimestampMicros(12345).build();
-    cellRead = (CellRead.CellReadImpl) this.cellsRead
+    cellRead = (CellWithinCellsRead.ReadImpl) this.cellsRead
             .startTimestampMicros(timestampRange.getStartTimestampMicros())
             .valueRegex(ByteString.copyFromUtf8("regex"))
             .latest();
@@ -129,7 +129,7 @@ public class CellsReadImplTest {
 
   @Test
   public void testLimit() throws Exception {
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead.limit(10);
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) cellsRead.limit(10);
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -141,7 +141,7 @@ public class CellsReadImplTest {
   @Test
   public void testStartTimestampMicros() throws Exception {
     final TimestampRange timestampRange = TimestampRange.newBuilder().setStartTimestampMicros(12345).build();
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) cellsRead
             .startTimestampMicros(timestampRange.getStartTimestampMicros());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
@@ -154,7 +154,7 @@ public class CellsReadImplTest {
   @Test
   public void testEndTimestampMicros() throws Exception {
     final TimestampRange timestampRange = TimestampRange.newBuilder().setEndTimestampMicros(12345).build();
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) cellsRead
             .endTimestampMicros(timestampRange.getEndTimestampMicros());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
@@ -166,7 +166,7 @@ public class CellsReadImplTest {
 
   @Test
   public void testValueRegex() throws Exception {
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead.valueRegex(ByteString.copyFromUtf8("regex"));
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) cellsRead.valueRegex(ByteString.copyFromUtf8("regex"));
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -178,7 +178,7 @@ public class CellsReadImplTest {
   @Test
   public void testStartValueClosed() throws Exception {
     final ValueRange valueRange = ValueRange.newBuilder().setStartValueClosed(ByteString.copyFromUtf8("regex")).build();
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) cellsRead
             .startValueClosed(valueRange.getStartValueClosed());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
@@ -191,7 +191,7 @@ public class CellsReadImplTest {
   @Test
   public void testStartValueOpen() throws Exception {
     final ValueRange valueRange = ValueRange.newBuilder().setStartValueOpen(ByteString.copyFromUtf8("regex")).build();
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) cellsRead
             .startValueOpen(valueRange.getStartValueOpen());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
@@ -204,7 +204,7 @@ public class CellsReadImplTest {
   @Test
   public void testEndValueClosed() throws Exception {
     final ValueRange valueRange = ValueRange.newBuilder().setEndValueClosed(ByteString.copyFromUtf8("regex")).build();
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) cellsRead
             .endValueClosed(valueRange.getEndValueClosed());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
@@ -217,7 +217,7 @@ public class CellsReadImplTest {
   @Test
   public void testEndValueOpen() throws Exception {
     final ValueRange valueRange = ValueRange.newBuilder().setEndValueOpen(ByteString.copyFromUtf8("regex")).build();
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) cellsRead
             .endValueOpen(valueRange.getEndValueOpen());
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
@@ -231,7 +231,7 @@ public class CellsReadImplTest {
   public void testMultipleFilters() throws Exception {
     final TimestampRange startTimestampRange = TimestampRange.newBuilder().setStartTimestampMicros(12345).build();
     final TimestampRange endTimestampRange = TimestampRange.newBuilder().setEndTimestampMicros(12345).build();
-    final CellsRead.CellsReadImpl read = (CellsRead.CellsReadImpl) cellsRead.limit(10)
+    final CellsWithinColumnRead.ReadImpl read = (CellsWithinColumnRead.ReadImpl) cellsRead.limit(10)
             .startTimestampMicros(startTimestampRange.getStartTimestampMicros())
             .endTimestampMicros(endTimestampRange.getEndTimestampMicros())
             .valueRegex(ByteString.copyFromUtf8("regex"));

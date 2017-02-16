@@ -23,10 +23,10 @@ import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
 import com.google.common.util.concurrent.ListenableFuture;
-
 import java.util.List;
+import java.util.function.Function;
 
-public interface BigtableRead<T> {
+interface BigtableRead<T> {
 
   ListenableFuture<T> executeAsync();
 
@@ -36,6 +36,6 @@ public interface BigtableRead<T> {
 
     BigtableDataClient getClient();
 
-    T toDataType(final List<Row> rows);
+    Function<List<Row>, T> toDataType();
   }
 }

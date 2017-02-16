@@ -44,13 +44,13 @@ import org.junit.Test;
 public class FamilyReadImplTest {
 
   BigtableMock bigtableMock = BigtableMock.getMock();
-  FamilyRead.FamilyReadImpl familyRead;
+  ReadFamily.FamilyWithinRowRead.ReadImpl familyRead;
 
   @Before
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
-    final RowRead.RowReadImpl rowRead = tableRead.row("row");
-    familyRead = new FamilyRead.FamilyReadImpl(rowRead, "family");
+    final ReadRow.RowSingleRead rowRead = tableRead.row("row");
+    familyRead = (ReadFamily.FamilyWithinRowRead.ReadImpl) rowRead.family("family");
   }
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {
@@ -71,12 +71,12 @@ public class FamilyReadImplTest {
 
   @Test
   public void testParentDataTypeToDataType() throws Exception {
-    assertEquals(Optional.empty(), familyRead.parentDataTypeToDataType(Optional.empty()));
-    assertEquals(Optional.empty(), familyRead.parentDataTypeToDataType(Optional.of(Row.getDefaultInstance())));
+    assertEquals(Optional.empty(), familyRead.parentTypeToCurrentType().apply(Optional.empty()));
+    assertEquals(Optional.empty(), familyRead.parentTypeToCurrentType().apply(Optional.of(Row.getDefaultInstance())));
 
     final Family family = Family.getDefaultInstance();
     final Row row = Row.newBuilder().addFamilies(family).build();
-    assertEquals(Optional.of(family), familyRead.parentDataTypeToDataType(Optional.of(row)));
+    assertEquals(Optional.of(family), familyRead.parentTypeToCurrentType().apply(Optional.of(row)));
   }
 
   @Test
@@ -94,7 +94,8 @@ public class FamilyReadImplTest {
 
   @Test
   public void testColumnQualifier() throws Exception {
-    final ColumnRead.ColumnReadImpl read = (ColumnRead.ColumnReadImpl) familyRead.columnQualifier("qualifier");
+    final ReadColumn.ColumnWithinFamilyRead.ReadImpl read =
+        (ReadColumn.ColumnWithinFamilyRead.ReadImpl) familyRead.columnQualifier("qualifier");
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -107,7 +108,8 @@ public class FamilyReadImplTest {
 
   @Test
   public void testColumnQualifierRegex() throws Exception {
-    final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) familyRead.columnQualifierRegex("regex");
+    final ReadColumns.ColumnsWithinFamilyRead.ReadImpl read =
+        (ReadColumns.ColumnsWithinFamilyRead.ReadImpl) familyRead.columnQualifierRegex("regex");
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
@@ -125,8 +127,8 @@ public class FamilyReadImplTest {
   @Test
   public void testColumnsQualifiers() throws Exception {
     final List<String> qualifiers = ImmutableList.of("qualifier1", "qualifier2");
-    final ColumnsRead.ColumnsReadImpl read = (ColumnsRead.ColumnsReadImpl) familyRead
-            .columnsQualifiers(qualifiers);
+    final ReadColumns.ColumnsWithinFamilyRead.ReadImpl read =
+        (ReadColumns.ColumnsWithinFamilyRead.ReadImpl) familyRead.columnsQualifiers(qualifiers);
 
     final ReadRowsRequest.Builder readRequest = read.readRequest();
     verifyReadRequest(readRequest);
