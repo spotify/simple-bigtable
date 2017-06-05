@@ -21,7 +21,6 @@ package com.spotify.bigtable.read;
 
 import com.google.bigtable.v2.Column;
 import com.google.bigtable.v2.Family;
-import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
 import com.google.protobuf.ByteString;
 import com.spotify.bigtable.read.ReadCell.CellWithinCellsRead;
@@ -31,8 +30,10 @@ import com.spotify.bigtable.read.ReadCells.CellsWithinColumnRead;
 import com.spotify.bigtable.read.ReadCells.CellsWithinFamiliesRead;
 import com.spotify.bigtable.read.ReadCells.CellsWithinRowsRead;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ReadColumn {
 
@@ -78,10 +79,10 @@ public class ReadColumn {
   }
 
   public interface ColumnWithinFamiliesRead
-      extends ColumnRead<CellsWithinFamiliesRead, CellWithinFamiliesRead, List<Family>> {
+      extends ColumnRead<CellsWithinFamiliesRead, CellWithinFamiliesRead, Map<String, Column>> {
 
     class ReadImpl
-        extends MultiReadImpl<ColumnWithinFamiliesRead, CellsWithinFamiliesRead, CellWithinFamiliesRead, Family>
+        extends AbstractColumnRead<ColumnWithinFamiliesRead, CellsWithinFamiliesRead, CellWithinFamiliesRead, Map<String, Column>, List<Family>>
         implements ColumnWithinFamiliesRead {
 
       ReadImpl(final Internal<List<Family>> parent) {
@@ -102,18 +103,25 @@ public class ReadColumn {
       public CellsWithinFamiliesRead cells() {
         return new CellsWithinFamiliesRead.ReadImpl(this);
       }
+
+      @Override
+      protected Function<List<Family>, Map<String, Column>> parentTypeToCurrentType() {
+        return families -> families.stream()
+            .filter(family -> family.getColumnsCount() > 0)
+            .collect(Collectors.toMap(Family::getName, fam -> fam.getColumns(0)));
+      }
     }
   }
 
 
   public interface ColumnWithinRowsRead
-      extends ColumnRead<CellsWithinRowsRead, CellWithinRowsRead, List<Row>> {
+      extends ColumnRead<CellsWithinRowsRead, CellWithinRowsRead, Map<String, Column>> {
 
     class ReadImpl
-        extends MultiReadImpl<ColumnWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, Row>
+        extends AbstractColumnRead<ColumnWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, Map<String, Column>, Map<String, Family>>
         implements ColumnWithinRowsRead {
 
-      ReadImpl(final Internal<List<Row>> parentRead) {
+      ReadImpl(final Internal<Map<String, Family>> parentRead) {
         super(parentRead);
       }
 
@@ -130,6 +138,48 @@ public class ReadColumn {
       @Override
       public CellsWithinRowsRead cells() {
         return new CellsWithinRowsRead.ReadImpl(this);
+      }
+
+      @Override
+      protected Function<Map<String, Family>, Map<String, Column>> parentTypeToCurrentType() {
+        return input -> input.entrySet().stream()
+            .filter(entry -> entry.getValue().getColumnsCount() > 0)
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getColumns(0)));
+      }
+    }
+  }
+
+  public interface ColumnWithinFamiliesAndRowsRead
+      extends ColumnRead<CellsWithinRowsRead, CellWithinRowsRead, Map<String, Map<String, Column>>> {
+
+    class ReadImpl
+        extends AbstractColumnRead<ColumnWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, Map<String, Column>, Map<String, Family>>
+        implements ColumnWithinRowsRead {
+
+      ReadImpl(final Internal<Map<String, Family>> parentRead) {
+        super(parentRead);
+      }
+
+      @Override
+      protected ColumnWithinRowsRead oneCol() {
+        return this;
+      }
+
+      @Override
+      public CellWithinRowsRead latestCell() {
+        return cells().latest();
+      }
+
+      @Override
+      public CellsWithinRowsRead cells() {
+        return new CellsWithinRowsRead.ReadImpl(this);
+      }
+
+      @Override
+      protected Function<Map<String, Family>, Map<String, Column>> parentTypeToCurrentType() {
+        return input -> input.entrySet().stream()
+            .filter(entry -> entry.getValue().getColumnsCount() > 0)
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getColumns(0)));
       }
     }
   }

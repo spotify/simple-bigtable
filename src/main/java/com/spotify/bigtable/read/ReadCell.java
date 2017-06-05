@@ -20,13 +20,12 @@
 package com.spotify.bigtable.read;
 
 import com.google.bigtable.v2.Cell;
-import com.google.bigtable.v2.Column;
-import com.google.bigtable.v2.Family;
-import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ReadCell {
 
@@ -46,40 +45,102 @@ public class ReadCell {
     }
   }
 
-  public interface CellWithinColumnsRead extends CellWithinMulti<Column> {
-    class ReadImpl extends CellWithinMultiImpl<Column> implements CellWithinColumnsRead {
-      ReadImpl(final Internal<List<Column>> parent) {
+  public interface CellWithinColumnsRead extends CellWithinMap {
+    class ReadImpl extends CellWithinMap.ReadImpl implements CellWithinColumnsRead {
+      ReadImpl(final Internal<Map<String, List<Cell>>> parent) {
         super(parent);
       }
     }
   }
 
-  public interface CellWithinFamiliesRead extends CellWithinMulti<Family> {
-    class ReadImpl extends CellWithinMultiImpl<Family> implements CellWithinFamiliesRead {
-      ReadImpl(final Internal<List<Family>> parent) {
+  public interface CellWithinFamiliesRead extends CellWithinMap {
+    class ReadImpl extends CellWithinMap.ReadImpl implements CellWithinFamiliesRead {
+      ReadImpl(final Internal<Map<String, List<Cell>>> parent) {
         super(parent);
       }
     }
   }
 
-  public interface CellWithinRowsRead extends CellWithinMulti<Row> {
-    class ReadImpl extends CellWithinMultiImpl<Row> implements CellWithinRowsRead {
-      ReadImpl(final Internal<List<Row>> parent) {
+  public interface CellWithinRowsRead extends CellWithinMap {
+    class ReadImpl extends CellWithinMap.ReadImpl implements CellWithinRowsRead {
+      ReadImpl(final Internal<Map<String, List<Cell>>> parent) {
         super(parent);
       }
     }
   }
 
-  private interface CellWithinMulti<R> extends CellRead<List<R>> {
-    class CellWithinMultiImpl<R> extends CellReadImpl<List<R>, List<R>> {
+  interface CellWithinMap extends CellRead<Map<String, Cell>> {
+    class ReadImpl extends CellReadImpl<Map<String, List<Cell>>, Map<String, Cell>> implements CellWithinMap {
 
-      private CellWithinMultiImpl(final Internal<List<R>> parent) {
+      private ReadImpl(final Internal<Map<String, List<Cell>>> parent) {
         super(parent);
       }
 
       @Override
-      protected Function<List<R>, List<R>> parentTypeToCurrentType() {
-        return Function.identity();
+      protected Function<Map<String, List<Cell>>, Map<String, Cell>> parentTypeToCurrentType() {
+        return input -> input.entrySet().stream()
+            .filter(entry -> !entry.getValue().isEmpty())
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
+      }
+    }
+  }
+
+  public interface CellWithinColumnsAndFamiliesRead extends CellWithinTwoMaps {
+    class ReadImpl extends CellWithinTwoMaps.ReadImpl implements CellWithinColumnsAndFamiliesRead {
+      ReadImpl(final Internal<Map<String, Map<String, List<Cell>>>> parent) {
+        super(parent);
+      }
+    }
+  }
+
+  public interface CellWithinColumnsAndRowsRead extends CellWithinTwoMaps {
+    class ReadImpl extends CellWithinTwoMaps.ReadImpl implements CellWithinColumnsAndRowsRead {
+      ReadImpl(final Internal<Map<String, Map<String, List<Cell>>>> parent) {
+        super(parent);
+      }
+    }
+  }
+
+  public interface CellWithinFamiliesAndRowsRead extends CellWithinTwoMaps {
+    class ReadImpl extends CellWithinTwoMaps.ReadImpl implements CellWithinFamiliesAndRowsRead {
+      ReadImpl(final Internal<Map<String, Map<String, List<Cell>>>> parent) {
+        super(parent);
+      }
+    }
+  }
+
+  interface CellWithinTwoMaps extends CellRead<Map<String, Map<String, Cell>>> {
+    class ReadImpl extends CellReadImpl<Map<String, Map<String, List<Cell>>>, Map<String, Map<String, Cell>>>
+        implements CellWithinTwoMaps {
+      ReadImpl(final Internal<Map<String, Map<String, List<Cell>>>> parent) {
+        super(parent);
+      }
+
+      @Override
+      protected Function<Map<String, Map<String, List<Cell>>>, Map<String, Map<String, Cell>>> parentTypeToCurrentType() {
+        return input -> input.entrySet().stream()
+            .filter(row -> !fn().apply(row.getValue()).isEmpty())
+            .collect(Collectors.toMap(Map.Entry::getKey,
+                                      row -> fn().apply(row.getValue())));
+      }
+
+      protected Function<Map<String, List<Cell>>, Map<String, Cell>> fn() {
+        return input -> input.entrySet().stream()
+            .filter(entry -> !entry.getValue().isEmpty())
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
+      }
+    }
+  }
+
+  public interface CellWithinColumnsWithinFamiliesWithinRowsRead extends CellRead<Map<String, Map<String, Map<String, Cell>>>> {
+    class ReadImpl extends CellReadImpl<Map<String, Map<String, Map<String, List<Cell>>>>, Map<String, Map<String, Map<String, Cell>>>> implements CellWithinColumnsWithinFamiliesWithinRowsRead {
+      ReadImpl(final Internal<Map<String, Map<String, Map<String, List<Cell>>>>> parent) {
+        super(parent);
+      }
+
+      @Override
+      protected Function<Map<String, Map<String, Map<String, List<Cell>>>>, Map<String, Map<String, Map<String, Cell>>>> parentTypeToCurrentType() {
+        return null;
       }
     }
   }

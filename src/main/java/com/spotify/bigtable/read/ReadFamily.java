@@ -28,8 +28,10 @@ import com.spotify.bigtable.read.ReadColumns.ColumnsWithinFamilyRead;
 import com.spotify.bigtable.read.ReadColumns.ColumnsWithinRowsRead;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ReadFamily {
 
@@ -84,10 +86,10 @@ public class ReadFamily {
   }
 
   public interface FamilyWithinRowsRead
-      extends FamilyRead<ColumnWithinRowsRead, ColumnsWithinRowsRead, List<Row>> {
+      extends FamilyRead<ColumnWithinRowsRead, ColumnsWithinRowsRead, Map<String, Family>> {
 
     class ReadImpl
-        extends AbstractFamilyRead<FamilyWithinRowsRead, ColumnWithinRowsRead, ColumnsWithinRowsRead, List<Row>, List<Row>>
+        extends AbstractFamilyRead<FamilyWithinRowsRead, ColumnWithinRowsRead, ColumnsWithinRowsRead, Map<String, Family>, List<Row>>
         implements FamilyWithinRowsRead {
 
       ReadImpl(final Internal<List<Row>> parent) {
@@ -116,8 +118,11 @@ public class ReadFamily {
       }
 
       @Override
-      protected Function<List<Row>, List<Row>> parentTypeToCurrentType() {
-        return Function.identity();
+      protected Function<List<Row>, Map<String, Family>> parentTypeToCurrentType() {
+        return input -> input.stream()
+            .filter(row -> row.getFamiliesCount() > 0)
+            .collect(Collectors.toMap(row -> row.getKey().toStringUtf8(),
+                                      row -> row.getFamilies(0)));
       }
     }
   }

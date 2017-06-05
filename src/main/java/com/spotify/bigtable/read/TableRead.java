@@ -22,6 +22,7 @@ package com.spotify.bigtable.read;
 import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
+import com.google.protobuf.ByteString;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
 import com.spotify.bigtable.read.ReadRow.RowMultiRead;
@@ -82,5 +83,13 @@ public interface TableRead {
     public Function<List<Row>, List<Row>> toDataType() {
       return Function.identity();
     }
+  }
+
+  public static void main(String[] args) {
+    Bigtable bigtable = null;
+
+    bigtable.read("table")
+        .rows()
+        .addRowRangeOpen(ByteString.copyFromUtf8("aa"), ByteString.copyFromUtf8("bb").concat(ByteString.copyFrom(new byte[]{(byte) 0xFF})));
   }
 }

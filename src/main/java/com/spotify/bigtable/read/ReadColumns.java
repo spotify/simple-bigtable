@@ -34,6 +34,7 @@ import com.spotify.bigtable.read.ReadCells.CellsWithinRowsRead;
 import com.spotify.bigtable.read.ReadColumn.ColumnRead;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -68,12 +69,12 @@ public class ReadColumns {
 
       @Override
       public CellWithinColumnsRead latestCell() {
-        return new CellWithinColumnsRead.ReadImpl(this);
+        return cells().latest();
       }
 
       @Override
       public CellsWithinColumnsRead cells() {
-        return (CellsWithinColumnsRead) new CellsWithinColumnsRead.ReadImpl(this);
+        return new CellsWithinColumnsRead.ReadImpl(this);
       }
 
       @Override
@@ -111,13 +112,18 @@ public class ReadColumns {
   }
 
   public interface ColumnsWithinRowsRead extends ColumnsRead<
-      ColumnsWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, List<Row>> {
+      ColumnsWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, Map<String, List<Column>>> {
 
-    class ReadImpl extends MultiReadImpl<ColumnsWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, Row>
+    class ReadImpl extends AbstractColumnsRead<ColumnsWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, Map<String, List<Column>>, Map<String, Family>>
         implements ColumnsWithinRowsRead {
 
-      ReadImpl(final Internal<List<Row>> parent) {
+      ReadImpl(final Internal<Map<String, Family>> parent) {
         super(parent);
+      }
+
+      @Override
+      protected Function<Map<String, Family>, Map<String, List<Column>>> parentTypeToCurrentType() {
+        return null;
       }
 
       @Override
@@ -127,12 +133,14 @@ public class ReadColumns {
 
       @Override
       public CellsWithinRowsRead cells() {
-        return new CellsWithinRowsRead.ReadImpl(this);
+//        return new CellsWithinRowsRead.ReadImpl(this);
+        return null;
       }
 
       @Override
       public CellWithinRowsRead latestCell() {
-        return new CellWithinRowsRead.ReadImpl(this);
+        return null;
+//        return new CellWithinRowsRead.ReadImpl(this);
       }
     }
   }
