@@ -8,15 +8,13 @@ not currently have an official asynchronous client. Within Spotify we have been 
 a pain to use. This library aims to fix that by making the most common interactions with Bigtable clean and easy
 to use while not preventing you from doing anything you could do with the RPC client.
 
-This is very much a work in progress and is just in the early stages of design and implementation.
-
 To import with maven, add this to your pom:
 
 ```xml
 <dependency>
     <groupId>com.spotify</groupId>
     <artifactId>simple-bigtable</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>LATEST_RELEASE</version>
 </dependency>
 ```
 
