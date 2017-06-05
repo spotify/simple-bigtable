@@ -1,5 +1,5 @@
 simple-bigtable
-Copyright 2016 Spotify AB
+Copyright 2017 Spotify AB
 
 This product includes software developed at
 Spotify AB (http://www.spotify.com/).
