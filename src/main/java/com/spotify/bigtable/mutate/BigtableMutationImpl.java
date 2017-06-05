@@ -76,13 +76,15 @@ public class BigtableMutationImpl extends BigtableTable implements BigtableMutat
 
   @Override
   public BigtableMutation deleteRow() {
-    mutateRowRequest.addMutations(Mutation.newBuilder().setDeleteFromRow(Mutation.DeleteFromRow.newBuilder()));
+    mutateRowRequest.addMutations(Mutation.newBuilder()
+                                      .setDeleteFromRow(Mutation.DeleteFromRow.newBuilder()));
     return this;
   }
 
   @Override
   public BigtableMutation deleteColumnFamily(String columnFamily) {
-    final Mutation.DeleteFromFamily.Builder deleteFromFamily = Mutation.DeleteFromFamily.newBuilder().setFamilyName(columnFamily);
+    final Mutation.DeleteFromFamily.Builder deleteFromFamily =
+        Mutation.DeleteFromFamily.newBuilder().setFamilyName(columnFamily);
     mutateRowRequest.addMutations(Mutation.newBuilder().setDeleteFromFamily(deleteFromFamily));
     return this;
   }
@@ -107,7 +109,8 @@ public class BigtableMutationImpl extends BigtableTable implements BigtableMutat
     startTimestampMicros.ifPresent(timestampRange::setStartTimestampMicros);
     endTimestampMicros.ifPresent(timestampRange::setEndTimestampMicros);
 
-    final Mutation.DeleteFromColumn.Builder deleteFromColumn = Mutation.DeleteFromColumn.newBuilder()
+    final Mutation.DeleteFromColumn.Builder deleteFromColumn =
+        Mutation.DeleteFromColumn.newBuilder()
             .setFamilyName(columnFamily)
             .setColumnQualifier(ByteString.copyFromUtf8(columnQualifier))
             .setTimeRange(timestampRange);
@@ -123,15 +126,22 @@ public class BigtableMutationImpl extends BigtableTable implements BigtableMutat
   }
 
   @Override
-  public BigtableMutation write(final String column, final ByteString value, final long timestampMicros) {
+  public BigtableMutation write(final String column,
+                                final ByteString value,
+                                final long timestampMicros) {
     final String[] split = column.split(":", 2);
     return write(split[0], split[1], value, timestampMicros);
   }
 
   @Override
-  public BigtableMutation write(final String columnFamily, final String columnQualifier, final ByteString value) {
+  public BigtableMutation write(final String columnFamily,
+                                final String columnQualifier,
+                                final ByteString value) {
     // If no timestamp specified use current time
-    return write(columnFamily, columnQualifier, value, TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()));
+    return write(columnFamily,
+                 columnQualifier,
+                 value,
+                 TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()));
   }
 
   @Override

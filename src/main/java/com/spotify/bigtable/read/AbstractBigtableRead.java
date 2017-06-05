@@ -52,10 +52,11 @@ import java.util.function.Function;
 
 /**
  * Abstract class which all Bigtable reads should extend.
- * This class lets the duplicate logic all be in a single place while letting the individual class only
- * deal with the interface they care about.
+ * This class lets the duplicate logic all be in a single place while letting the individual
+ * class only deal with the interface they care about.
  *
- * @param <P>  Type of parent read. Example Parent of a Family is a Row which would be Optional of Row
+ * @param <P>  Type of parent read. Example Parent of a Family is a Row
+ *             which would be Optional of Row
  * @param <T>  Return type of query. Example Optional of Cell, List of Cell, Optional of Row, etc.
  */
 abstract class AbstractBigtableRead<P, T> implements BigtableRead<T>, BigtableRead.Internal<T> {
@@ -121,7 +122,9 @@ abstract class AbstractBigtableRead<P, T> implements BigtableRead<T>, BigtableRe
   protected static <A> Optional<A> headOption(final List<A> list) {
     if (list.size() > 1) {
       final String simpleName = list.get(0).getClass().getSimpleName();
-      final String message = String.format("Multiple entities of type %s matched when only 1 expected", simpleName);
+      final String message = String.format(
+          "Multiple entities of type %s matched when only 1 expected", simpleName
+      );
       throw new RuntimeException(message);
     }
     return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));

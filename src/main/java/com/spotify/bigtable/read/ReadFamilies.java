@@ -55,13 +55,18 @@ import java.util.function.Function;
 
 public class ReadFamilies {
 
-  interface FamiliesRead<OneCol, MultiCol, R> extends FamilyRead<OneCol, MultiCol, R> { }
+  interface FamiliesRead<OneColT, MultiColT, R> extends FamilyRead<OneColT, MultiColT, R> { }
 
   public interface FamiliesWithinRowRead extends FamiliesRead<
       ColumnWithinFamiliesRead, ColumnsWithinFamiliesRead, List<Family>> {
 
     class ReadImpl
-        extends AbstractFamiliesRead<FamiliesWithinRowRead.ReadImpl, ColumnWithinFamiliesRead, ColumnsWithinFamiliesRead, List<Family>, Optional<Row>>
+        extends AbstractFamiliesRead<
+        FamiliesWithinRowRead.ReadImpl,
+        ColumnWithinFamiliesRead,
+        ColumnsWithinFamiliesRead,
+        List<Family>,
+        Optional<Row>>
         implements FamiliesWithinRowRead {
 
       ReadImpl(final Internal<Optional<Row>> parentRead) {
@@ -99,7 +104,12 @@ public class ReadFamilies {
       ColumnWithinRowsRead, ColumnsWithinRowsRead, List<Row>> {
 
     class ReadImpl
-        extends AbstractFamiliesRead<FamiliesWithinRowsRead.ReadImpl, ColumnWithinRowsRead, ColumnsWithinRowsRead, List<Row>, List<Row>>
+        extends AbstractFamiliesRead<
+        FamiliesWithinRowsRead.ReadImpl,
+        ColumnWithinRowsRead,
+        ColumnsWithinRowsRead,
+        List<Row>,
+        List<Row>>
         implements FamiliesWithinRowsRead {
 
       ReadImpl(final Internal<List<Row>> parentRead) {
@@ -133,23 +143,24 @@ public class ReadFamilies {
     }
   }
 
-  private abstract static class AbstractFamiliesRead<MultiFam, OneCol, MultiCol, R, P>
-      extends AbstractBigtableRead<P, R> implements FamiliesRead<OneCol, MultiCol, R> {
+  private abstract static class AbstractFamiliesRead<MultiFamT, OneColT, MultiColT, R, P>
+      extends AbstractBigtableRead<P, R> implements FamiliesRead<OneColT, MultiColT, R> {
 
     private AbstractFamiliesRead(final Internal<P> parentRead) {
       super(parentRead);
     }
 
-    abstract protected MultiFam multiFam();
+    protected abstract MultiFamT multiFam();
 
-    MultiFam familyRegex(final String columnFamilyRegex) {
-      final RowFilter.Builder familyFilter = RowFilter.newBuilder().setFamilyNameRegexFilter(columnFamilyRegex);
+    MultiFamT familyRegex(final String columnFamilyRegex) {
+      final RowFilter.Builder familyFilter = RowFilter.newBuilder()
+          .setFamilyNameRegexFilter(columnFamilyRegex);
       addRowFilter(familyFilter);
       return multiFam();
     }
 
     @Override
-    public MultiCol columnsQualifiers(Collection<String> columnQualifiers) {
+    public MultiColT columnsQualifiers(Collection<String> columnQualifiers) {
       return columnQualifierRegex(toExactMatchAnyRegex(columnQualifiers));
     }
   }

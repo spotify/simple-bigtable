@@ -55,7 +55,9 @@ public class BigtableReadModifyWriteImpl
   private final ReadModifyWriteRowRequest.Builder readModifyWriteRequest;
   private final ReadModifyWriteRule.Builder readModifyWriteRule;
 
-  public BigtableReadModifyWriteImpl(final Bigtable bigtable, final String table, final String row) {
+  public BigtableReadModifyWriteImpl(final Bigtable bigtable,
+                                     final String table,
+                                     final String row) {
     super(bigtable, table);
     this.readModifyWriteRequest = ReadModifyWriteRowRequest.newBuilder()
             .setTableName(getFullTableName())
@@ -70,7 +72,8 @@ public class BigtableReadModifyWriteImpl
 
   @Override
   public ListenableFuture<ReadModifyWriteRowResponse> executeAsync() {
-    return bigtable.getSession().getDataClient().readModifyWriteRowAsync(readModifyWriteRequest.build());
+    return bigtable.getSession().getDataClient()
+        .readModifyWriteRowAsync(readModifyWriteRequest.build());
   }
 
   @Override

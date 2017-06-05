@@ -140,6 +140,9 @@
     <plugins>
       <plugin>
         <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <violationSeverity>warning</violationSeverity>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>

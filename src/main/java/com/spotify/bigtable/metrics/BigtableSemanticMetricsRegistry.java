@@ -39,13 +39,12 @@
 
 package com.spotify.bigtable.metrics;
 
-import com.spotify.metrics.core.MetricId;
-import com.spotify.metrics.core.SemanticMetricRegistry;
-
 import com.google.cloud.bigtable.metrics.Counter;
 import com.google.cloud.bigtable.metrics.Meter;
 import com.google.cloud.bigtable.metrics.MetricRegistry;
 import com.google.cloud.bigtable.metrics.Timer;
+import com.spotify.metrics.core.MetricId;
+import com.spotify.metrics.core.SemanticMetricRegistry;
 import java.util.concurrent.TimeUnit;
 
 /**

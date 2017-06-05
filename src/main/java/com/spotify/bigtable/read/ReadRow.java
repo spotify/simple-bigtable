@@ -55,19 +55,26 @@ import java.util.function.Function;
 
 public class ReadRow {
 
-  interface RowRead<OneFam, MultiFam, OneCol, R> extends BigtableRead<R> {
+  interface RowRead<OneFamT, MultiFamT, OneColT, R> extends BigtableRead<R> {
 
-    OneFam family(final String family);
+    OneFamT family(final String family);
 
-    MultiFam familyRegex(final String familyRegex);
+    MultiFamT familyRegex(final String familyRegex);
 
-    MultiFam families(final Collection<String> families);
+    MultiFamT families(final Collection<String> families);
 
-    OneCol column(final String column);
+    OneColT column(final String column);
   }
 
-  public interface RowSingleRead extends RowRead<FamilyWithinRowRead, FamiliesWithinRowRead, ColumnWithinFamilyRead, Optional<Row>> {
-    class ReadImpl extends AbstractRowRead<FamilyWithinRowRead, FamiliesWithinRowRead, ColumnWithinFamilyRead, Optional<Row>, List<Row>>
+  public interface RowSingleRead extends RowRead<
+      FamilyWithinRowRead, FamiliesWithinRowRead, ColumnWithinFamilyRead, Optional<Row>> {
+    class ReadImpl
+        extends AbstractRowRead<
+        FamilyWithinRowRead,
+        FamiliesWithinRowRead,
+        ColumnWithinFamilyRead,
+        Optional<Row>,
+        List<Row>>
         implements RowSingleRead {
 
       ReadImpl(final Internal<List<Row>> parentRead) {
@@ -97,8 +104,15 @@ public class ReadRow {
     }
   }
 
-  public interface RowMultiRead extends RowRead<FamilyWithinRowsRead, FamiliesWithinRowsRead, ColumnWithinRowsRead, List<Row>> {
-    class ReadImpl extends AbstractRowRead<FamilyWithinRowsRead, FamiliesWithinRowsRead, ColumnWithinRowsRead, List<Row>, List<Row>>
+  public interface RowMultiRead extends RowRead<
+      FamilyWithinRowsRead, FamiliesWithinRowsRead, ColumnWithinRowsRead, List<Row>> {
+    class ReadImpl
+        extends AbstractRowRead<
+        FamilyWithinRowsRead,
+        FamiliesWithinRowsRead,
+        ColumnWithinRowsRead,
+        List<Row>,
+        List<Row>>
         implements RowMultiRead {
 
       ReadImpl(final Internal<List<Row>> parentRead) {
@@ -128,15 +142,15 @@ public class ReadRow {
     }
   }
 
-  private abstract static class AbstractRowRead<OneFam, MultiFam, OneCol, R, P>
-      extends AbstractBigtableRead<P, R> implements RowRead<OneFam, MultiFam, OneCol, R> {
+  private abstract static class AbstractRowRead<OneFamT, MultiFamT, OneColT, R, P>
+      extends AbstractBigtableRead<P, R> implements RowRead<OneFamT, MultiFamT, OneColT, R> {
 
     public AbstractRowRead(Internal<P> parentRead) {
       super(parentRead);
     }
 
     @Override
-    public MultiFam families(Collection<String> families) {
+    public MultiFamT families(Collection<String> families) {
       return familyRegex(toExactMatchAnyRegex(families));
     }
   }

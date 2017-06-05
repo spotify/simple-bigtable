@@ -53,22 +53,27 @@ import java.util.function.Function;
 
 public class ReadFamily {
 
-  interface FamilyRead<OneCol, MultiCol, R> extends BigtableRead<R> {
+  interface FamilyRead<OneColT, MultiColT, R> extends BigtableRead<R> {
 
-    OneCol columnQualifier(final String columnQualifier);
+    OneColT columnQualifier(final String columnQualifier);
 
-    MultiCol columnQualifierRegex(final String columnQualifierRegex);
+    MultiColT columnQualifierRegex(final String columnQualifierRegex);
 
-    MultiCol columnsQualifiers(final Collection<String> columnQualifiers);
+    MultiColT columnsQualifiers(final Collection<String> columnQualifiers);
 
-    MultiCol columns();
+    MultiColT columns();
   }
 
   public interface FamilyWithinRowRead
       extends FamilyRead<ColumnWithinFamilyRead, ColumnsWithinFamilyRead, Optional<Family>> {
 
     class ReadImpl
-        extends AbstractFamilyRead<FamilyWithinRowRead, ColumnWithinFamilyRead, ColumnsWithinFamilyRead, Optional<Family>, Optional<Row>>
+        extends AbstractFamilyRead<
+        FamilyWithinRowRead,
+        ColumnWithinFamilyRead,
+        ColumnsWithinFamilyRead,
+        Optional<Family>,
+        Optional<Row>>
         implements FamilyWithinRowRead {
 
       ReadImpl(final Internal<Optional<Row>> parentRead) {
@@ -107,7 +112,12 @@ public class ReadFamily {
       extends FamilyRead<ColumnWithinRowsRead, ColumnsWithinRowsRead, List<Row>> {
 
     class ReadImpl
-        extends AbstractFamilyRead<FamilyWithinRowsRead, ColumnWithinRowsRead, ColumnsWithinRowsRead, List<Row>, List<Row>>
+        extends AbstractFamilyRead<
+        FamilyWithinRowsRead,
+        ColumnWithinRowsRead,
+        ColumnsWithinRowsRead,
+        List<Row>,
+        List<Row>>
         implements FamilyWithinRowsRead {
 
       ReadImpl(final Internal<List<Row>> parent) {
@@ -142,16 +152,16 @@ public class ReadFamily {
     }
   }
 
-  private abstract static class AbstractFamilyRead<OneFam, OneCol, MultiCol, R, P>
-      extends AbstractBigtableRead<P, R> implements FamilyRead<OneCol, MultiCol, R> {
+  private abstract static class AbstractFamilyRead<OneFamT, OneColT, MultiColT, R, P>
+      extends AbstractBigtableRead<P, R> implements FamilyRead<OneColT, MultiColT, R> {
 
     private AbstractFamilyRead(final Internal<P> parentRead) {
       super(parentRead);
     }
 
-    abstract protected OneFam oneFam();
+    protected abstract OneFamT oneFam();
 
-    OneFam columnFamily(final String columnFamily) {
+    OneFamT columnFamily(final String columnFamily) {
       final RowFilter.Builder familyFilter = RowFilter.newBuilder()
           .setFamilyNameRegexFilter(toExactMatchRegex(columnFamily));
       addRowFilter(familyFilter);
@@ -159,7 +169,7 @@ public class ReadFamily {
     }
 
     @Override
-    public MultiCol columnsQualifiers(Collection<String> columnQualifiers) {
+    public MultiColT columnsQualifiers(Collection<String> columnQualifiers) {
       return columnQualifierRegex(toExactMatchAnyRegex(columnQualifiers));
     }
   }

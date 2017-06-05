@@ -59,22 +59,28 @@ import java.util.function.Function;
 
 public class ReadColumns {
 
-  interface ColumnsRead<MultiCol, MultiCell, OneCell, R> extends ColumnRead<MultiCell, OneCell, R> {
+  interface ColumnsRead<MultiColT, MultiCellT, OneCellT, R>
+      extends ColumnRead<MultiCellT, OneCellT, R> {
 
-    MultiCol startQualifierClosed(final ByteString startQualifierClosed);
+    MultiColT startQualifierClosed(final ByteString startQualifierClosed);
 
-    MultiCol startQualifierOpen(final ByteString startQualifierOpen);
+    MultiColT startQualifierOpen(final ByteString startQualifierOpen);
 
-    MultiCol endQualifierClosed(final ByteString endQualifierClosed);
+    MultiColT endQualifierClosed(final ByteString endQualifierClosed);
 
-    MultiCol endQualifierOpen(final ByteString endQualifierOpen);
+    MultiColT endQualifierOpen(final ByteString endQualifierOpen);
   }
 
   public interface ColumnsWithinFamilyRead extends ColumnsRead<
       ColumnsWithinFamilyRead, CellsWithinColumnsRead, CellWithinColumnsRead, List<Column>> {
 
-    class ReadImpl extends AbstractColumnsRead<
-        ColumnsWithinFamilyRead, CellsWithinColumnsRead, CellWithinColumnsRead, List<Column>, Optional<Family>>
+    class ReadImpl
+        extends AbstractColumnsRead<
+        ColumnsWithinFamilyRead,
+        CellsWithinColumnsRead,
+        CellWithinColumnsRead,
+        List<Column>,
+        Optional<Family>>
         implements ColumnsWithinFamilyRead {
 
       ReadImpl(final Internal<Optional<Family>> row) {
@@ -93,7 +99,7 @@ public class ReadColumns {
 
       @Override
       public CellsWithinColumnsRead cells() {
-        return (CellsWithinColumnsRead) new CellsWithinColumnsRead.ReadImpl(this);
+        return new CellsWithinColumnsRead.ReadImpl(this);
       }
 
       @Override
@@ -106,7 +112,12 @@ public class ReadColumns {
   public interface ColumnsWithinFamiliesRead extends ColumnsRead<
       ColumnsWithinFamiliesRead, CellsWithinFamiliesRead, CellWithinFamiliesRead, List<Family>> {
 
-    class ReadImpl extends MultiReadImpl<ColumnsWithinFamiliesRead, CellsWithinFamiliesRead, CellWithinFamiliesRead, Family>
+    class ReadImpl
+        extends MultiReadImpl<
+        ColumnsWithinFamiliesRead,
+        CellsWithinFamiliesRead,
+        CellWithinFamiliesRead,
+        Family>
         implements ColumnsWithinFamiliesRead {
 
       ReadImpl(final Internal<List<Family>> parentRead) {
@@ -133,7 +144,8 @@ public class ReadColumns {
   public interface ColumnsWithinRowsRead extends ColumnsRead<
       ColumnsWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, List<Row>> {
 
-    class ReadImpl extends MultiReadImpl<ColumnsWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, Row>
+    class ReadImpl
+        extends MultiReadImpl<ColumnsWithinRowsRead, CellsWithinRowsRead, CellWithinRowsRead, Row>
         implements ColumnsWithinRowsRead {
 
       ReadImpl(final Internal<List<Row>> parent) {
@@ -157,8 +169,8 @@ public class ReadColumns {
     }
   }
 
-  private abstract static class MultiReadImpl<MultiCol, MultiCell, OneCell, R>
-      extends AbstractColumnsRead<MultiCol, MultiCell, OneCell, List<R>, List<R>> {
+  private abstract static class MultiReadImpl<MultiColT, MultiCellT, OneCellT, R>
+      extends AbstractColumnsRead<MultiColT, MultiCellT, OneCellT, List<R>, List<R>> {
 
     private MultiReadImpl(final Internal<List<R>> parentRead) {
       super(parentRead);
@@ -170,46 +182,52 @@ public class ReadColumns {
     }
   }
 
-  private abstract static class AbstractColumnsRead<MultiCol, MultiCell, OneCell, R, P>
-      extends AbstractBigtableRead<P, R> implements ColumnsRead<MultiCol, MultiCell, OneCell, R> {
+  private abstract static class AbstractColumnsRead<MultiColT, MultiCellT, OneCellT, R, P>
+      extends AbstractBigtableRead<P, R>
+      implements ColumnsRead<MultiColT, MultiCellT, OneCellT, R> {
 
     public AbstractColumnsRead(final Internal<P> parentRead) {
       super(parentRead);
     }
 
-    abstract MultiCol multiCol();
+    abstract MultiColT multiCol();
 
-    MultiCol columnQualifierRegex(final String columnQualifierRegex) {
+    MultiColT columnQualifierRegex(final String columnQualifierRegex) {
       final ByteString columnRegexBytes = ByteString.copyFromUtf8(columnQualifierRegex);
-      final RowFilter.Builder columnFilter = RowFilter.newBuilder().setColumnQualifierRegexFilter(columnRegexBytes);
+      final RowFilter.Builder columnFilter = RowFilter.newBuilder()
+          .setColumnQualifierRegexFilter(columnRegexBytes);
       addRowFilter(columnFilter);
       return multiCol();
     }
 
     @Override
-    public MultiCol startQualifierClosed(ByteString startQualifierClosed) {
-      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierClosed(startQualifierClosed);
+    public MultiColT startQualifierClosed(ByteString startQualifierClosed) {
+      final ColumnRange.Builder columnRange = ColumnRange.newBuilder()
+          .setStartQualifierClosed(startQualifierClosed);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return multiCol();
     }
 
     @Override
-    public MultiCol startQualifierOpen(ByteString startQualifierOpen) {
-      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setStartQualifierOpen(startQualifierOpen);
+    public MultiColT startQualifierOpen(ByteString startQualifierOpen) {
+      final ColumnRange.Builder columnRange = ColumnRange.newBuilder()
+          .setStartQualifierOpen(startQualifierOpen);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return multiCol();
     }
 
     @Override
-    public MultiCol endQualifierClosed(ByteString endQualifierClosed) {
-      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierClosed(endQualifierClosed);
+    public MultiColT endQualifierClosed(ByteString endQualifierClosed) {
+      final ColumnRange.Builder columnRange = ColumnRange.newBuilder()
+          .setEndQualifierClosed(endQualifierClosed);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return multiCol();
     }
 
     @Override
-    public MultiCol endQualifierOpen(ByteString endQualifierOpen) {
-      final ColumnRange.Builder columnRange = ColumnRange.newBuilder().setEndQualifierOpen(endQualifierOpen);
+    public MultiColT endQualifierOpen(ByteString endQualifierOpen) {
+      final ColumnRange.Builder columnRange = ColumnRange.newBuilder()
+          .setEndQualifierOpen(endQualifierOpen);
       addRowFilter(RowFilter.newBuilder().setColumnRangeFilter(columnRange));
       return multiCol();
     }

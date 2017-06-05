@@ -92,7 +92,7 @@ public interface BigtableMutation {
   BigtableMutation deleteColumn(final String columnFamily, final String columnQualifer);
 
   /**
-   * Delete cells within a column and a certain timestamp range
+   * Delete cells within a column and a certain timestamp range.
    * @param columnFamily column family
    * @param columnQualifier column qualifier
    * @param startTimestampMicros optional start of timestamp range
@@ -128,7 +128,9 @@ public interface BigtableMutation {
    * @param value           value
    * @return BigtableMutation
    */
-  BigtableMutation write(final String columnFamily, final String columnQualifier, final ByteString value);
+  BigtableMutation write(final String columnFamily,
+                         final String columnQualifier,
+                         final ByteString value);
 
   /**
    * Write a value with an explicit timestamp.

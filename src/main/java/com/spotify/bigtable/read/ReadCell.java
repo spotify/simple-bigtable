@@ -104,7 +104,8 @@ public class ReadCell {
     }
   }
 
-  private abstract static class CellReadImpl<P, R> extends AbstractBigtableRead<P, R> implements CellRead<R> {
+  private abstract static class CellReadImpl<P, R>
+      extends AbstractBigtableRead<P, R> implements CellRead<R> {
 
     private CellReadImpl(final Internal<P> parent) {
       super(parent);

@@ -58,30 +58,35 @@ import java.util.function.Function;
 
 public class ReadCells {
 
-  interface CellsRead<MultiCell, OneCell, R> extends BigtableRead<R> {
+  interface CellsRead<MultiCellT, OneCellT, R> extends BigtableRead<R> {
 
-    OneCell latest();
+    OneCellT latest();
 
-    MultiCell limit(final int limit);
+    MultiCellT limit(final int limit);
 
-    MultiCell startTimestampMicros(final long startTimestampMicros);
+    MultiCellT startTimestampMicros(final long startTimestampMicros);
 
-    MultiCell endTimestampMicros(final long endTimestampMicros);
+    MultiCellT endTimestampMicros(final long endTimestampMicros);
 
-    MultiCell valueRegex(final ByteString valueRegex);
+    MultiCellT valueRegex(final ByteString valueRegex);
 
-    MultiCell startValueClosed(final ByteString startValueInclusive);
+    MultiCellT startValueClosed(final ByteString startValueInclusive);
 
-    MultiCell startValueOpen(final ByteString startValueExclusive);
+    MultiCellT startValueOpen(final ByteString startValueExclusive);
 
-    MultiCell endValueClosed(final ByteString endValueInclusive);
+    MultiCellT endValueClosed(final ByteString endValueInclusive);
 
-    MultiCell endValueOpen(final ByteString endValueExclusive);
+    MultiCellT endValueOpen(final ByteString endValueExclusive);
   }
 
-  public interface CellsWithinColumnRead extends CellsRead<CellsWithinColumnRead, CellWithinCellsRead, List<Cell>> {
+  public interface CellsWithinColumnRead
+      extends CellsRead<CellsWithinColumnRead, CellWithinCellsRead, List<Cell>> {
     class ReadImpl
-        extends AbstractCellsRead<CellsWithinColumnRead, CellWithinCellsRead, List<Cell>, Optional<Column>>
+        extends AbstractCellsRead<
+        CellsWithinColumnRead,
+        CellWithinCellsRead,
+        List<Cell>,
+        Optional<Column>>
         implements CellsWithinColumnRead {
 
       public ReadImpl(final Internal<Optional<Column>> column) {
@@ -105,7 +110,8 @@ public class ReadCells {
     }
   }
 
-  public interface CellsWithinColumnsRead extends CellsRead<CellsWithinColumnsRead, CellWithinColumnsRead, List<Column>> {
+  public interface CellsWithinColumnsRead
+      extends CellsRead<CellsWithinColumnsRead, CellWithinColumnsRead, List<Column>> {
     class ReadImpl
         extends MultiReadImpl<CellsWithinColumnsRead, CellWithinColumnsRead, Column>
         implements CellsWithinColumnsRead {
@@ -126,7 +132,8 @@ public class ReadCells {
     }
   }
 
-  public interface CellsWithinFamiliesRead extends CellsRead<CellsWithinFamiliesRead, CellWithinFamiliesRead, List<Family>> {
+  public interface CellsWithinFamiliesRead
+      extends CellsRead<CellsWithinFamiliesRead, CellWithinFamiliesRead, List<Family>> {
     class ReadImpl
         extends MultiReadImpl<CellsWithinFamiliesRead, CellWithinFamiliesRead, Family>
         implements CellsWithinFamiliesRead {
@@ -147,7 +154,8 @@ public class ReadCells {
     }
   }
   
-  public interface CellsWithinRowsRead extends CellsRead<CellsWithinRowsRead, CellWithinRowsRead, List<Row>> {
+  public interface CellsWithinRowsRead
+      extends CellsRead<CellsWithinRowsRead, CellWithinRowsRead, List<Row>> {
     class ReadImpl
         extends MultiReadImpl<CellsWithinRowsRead, CellWithinRowsRead, Row>
         implements CellsWithinRowsRead {
@@ -168,8 +176,8 @@ public class ReadCells {
     }
   }
 
-  private abstract static class MultiReadImpl<MultiCell, OneCell, R>
-      extends AbstractCellsRead<MultiCell, OneCell, List<R>, List<R>> {
+  private abstract static class MultiReadImpl<MultiCellT, OneCellT, R>
+      extends AbstractCellsRead<MultiCellT, OneCellT, List<R>, List<R>> {
 
     private MultiReadImpl(final Internal<List<R>> parentRead) {
       super(parentRead);
@@ -181,66 +189,75 @@ public class ReadCells {
     }
   }
 
-  private abstract static class AbstractCellsRead<MultiCell, OneCell, R, P>
-      extends AbstractBigtableRead<P, R> implements CellsRead<MultiCell, OneCell, R> {
+  private abstract static class AbstractCellsRead<MultiCellT, OneCellT, R, P>
+      extends AbstractBigtableRead<P, R> implements CellsRead<MultiCellT, OneCellT, R> {
 
     private AbstractCellsRead(final Internal<P> parentRead) {
       super(parentRead);
     }
 
-    abstract protected MultiCell multiCell();
+    protected abstract MultiCellT multiCell();
 
     @Override
-    public MultiCell  limit(final int limit) {
-      final RowFilter.Builder limitFilter = RowFilter.newBuilder().setCellsPerColumnLimitFilter(limit);
+    public MultiCellT limit(final int limit) {
+      final RowFilter.Builder limitFilter = RowFilter.newBuilder()
+          .setCellsPerColumnLimitFilter(limit);
       addRowFilter(limitFilter);
       return multiCell();
     }
 
     @Override
-    public MultiCell  startTimestampMicros(final long startTimestampMicros) {
-      final TimestampRange tsRange = TimestampRange.newBuilder().setStartTimestampMicros(startTimestampMicros).build();
+    public MultiCellT startTimestampMicros(final long startTimestampMicros) {
+      final TimestampRange tsRange = TimestampRange.newBuilder()
+          .setStartTimestampMicros(startTimestampMicros)
+          .build();
       addRowFilter(RowFilter.newBuilder().setTimestampRangeFilter(tsRange));
       return multiCell();
     }
 
     @Override
-    public MultiCell  endTimestampMicros(final long endTimestampMicros) {
-      final TimestampRange tsRange = TimestampRange.newBuilder().setEndTimestampMicros(endTimestampMicros).build();
+    public MultiCellT endTimestampMicros(final long endTimestampMicros) {
+      final TimestampRange tsRange = TimestampRange.newBuilder()
+          .setEndTimestampMicros(endTimestampMicros)
+          .build();
       addRowFilter(RowFilter.newBuilder().setTimestampRangeFilter(tsRange));
       return multiCell();
     }
 
     @Override
-    public MultiCell  valueRegex(final ByteString valueRegex) {
+    public MultiCellT valueRegex(final ByteString valueRegex) {
       addRowFilter(RowFilter.newBuilder().setValueRegexFilter(valueRegex));
       return multiCell();
     }
 
     @Override
-    public MultiCell  startValueClosed(final ByteString startValueClosed) {
-      final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueClosed(startValueClosed);
+    public MultiCellT startValueClosed(final ByteString startValueClosed) {
+      final ValueRange.Builder valueRange = ValueRange.newBuilder()
+          .setStartValueClosed(startValueClosed);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return multiCell();
     }
 
     @Override
-    public MultiCell  startValueOpen(final ByteString startValueOpen) {
-      final ValueRange.Builder valueRange = ValueRange.newBuilder().setStartValueOpen(startValueOpen);
+    public MultiCellT startValueOpen(final ByteString startValueOpen) {
+      final ValueRange.Builder valueRange = ValueRange.newBuilder()
+          .setStartValueOpen(startValueOpen);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return multiCell();
     }
 
     @Override
-    public MultiCell  endValueClosed(final ByteString endValueClosed) {
-      final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueClosed(endValueClosed);
+    public MultiCellT endValueClosed(final ByteString endValueClosed) {
+      final ValueRange.Builder valueRange = ValueRange.newBuilder()
+          .setEndValueClosed(endValueClosed);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return multiCell();
     }
 
     @Override
-    public MultiCell  endValueOpen(final ByteString endValueOpen) {
-      final ValueRange.Builder valueRange = ValueRange.newBuilder().setEndValueOpen(endValueOpen);
+    public MultiCellT endValueOpen(final ByteString endValueOpen) {
+      final ValueRange.Builder valueRange = ValueRange.newBuilder()
+          .setEndValueOpen(endValueOpen);
       addRowFilter(RowFilter.newBuilder().setValueRangeFilter(valueRange));
       return multiCell();
     }

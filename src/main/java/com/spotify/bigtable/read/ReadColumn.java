@@ -56,11 +56,11 @@ import java.util.function.Function;
 
 public class ReadColumn {
 
-  interface ColumnRead<MultiCell, OneCell, R> extends BigtableRead<R> {
+  interface ColumnRead<MultiCellT, OneCellT, R> extends BigtableRead<R> {
 
-    MultiCell cells();
+    MultiCellT cells();
 
-    OneCell latestCell();
+    OneCellT latestCell();
 
   }
 
@@ -68,7 +68,12 @@ public class ReadColumn {
       extends ColumnRead<CellsWithinColumnRead, CellWithinCellsRead, Optional<Column>> {
 
     class ReadImpl
-        extends AbstractColumnRead<ColumnWithinFamilyRead, CellsWithinColumnRead, CellWithinCellsRead, Optional<Column>, Optional<Family>>
+        extends AbstractColumnRead<
+        ColumnWithinFamilyRead,
+        CellsWithinColumnRead,
+        CellWithinCellsRead,
+        Optional<Column>,
+        Optional<Family>>
         implements ColumnWithinFamilyRead {
 
       ReadImpl(final Internal<Optional<Family>> parentRead) {
@@ -101,7 +106,11 @@ public class ReadColumn {
       extends ColumnRead<CellsWithinFamiliesRead, CellWithinFamiliesRead, List<Family>> {
 
     class ReadImpl
-        extends MultiReadImpl<ColumnWithinFamiliesRead, CellsWithinFamiliesRead, CellWithinFamiliesRead, Family>
+        extends MultiReadImpl<
+        ColumnWithinFamiliesRead,
+        CellsWithinFamiliesRead,
+        CellWithinFamiliesRead,
+        Family>
         implements ColumnWithinFamiliesRead {
 
       ReadImpl(final Internal<List<Family>> parent) {
@@ -154,8 +163,8 @@ public class ReadColumn {
     }
   }
 
-  private abstract static class MultiReadImpl<OneCol, MultiCell, OneCell, R>
-      extends AbstractColumnRead<OneCol, MultiCell, OneCell, List<R>, List<R>> {
+  private abstract static class MultiReadImpl<OneColT, MultiCellT, OneCellT, R>
+      extends AbstractColumnRead<OneColT, MultiCellT, OneCellT, List<R>, List<R>> {
 
     MultiReadImpl(final Internal<List<R>> parentRead) {
       super(parentRead);
@@ -167,18 +176,19 @@ public class ReadColumn {
     }
   }
 
-  private abstract static class AbstractColumnRead<OneCol, MultiCell, OneCell, R, P>
-      extends AbstractBigtableRead<P, R> implements ColumnRead<MultiCell, OneCell, R> {
+  private abstract static class AbstractColumnRead<OneColT, MultiCellT, OneCellT, R, P>
+      extends AbstractBigtableRead<P, R> implements ColumnRead<MultiCellT, OneCellT, R> {
 
     private AbstractColumnRead(final Internal<P> parentRead) {
       super(parentRead);
     }
 
-    abstract protected OneCol oneCol();
+    protected abstract OneColT oneCol();
 
-    OneCol columnQualifier(final String columnQualifier) {
+    OneColT columnQualifier(final String columnQualifier) {
+      final String regex = toExactMatchRegex(columnQualifier);
       final RowFilter.Builder qualifierFilter = RowFilter.newBuilder()
-          .setColumnQualifierRegexFilter(ByteString.copyFromUtf8(toExactMatchRegex(columnQualifier)));
+          .setColumnQualifierRegexFilter(ByteString.copyFromUtf8(regex));
       addRowFilter(qualifierFilter);
       return oneCol();
     }
