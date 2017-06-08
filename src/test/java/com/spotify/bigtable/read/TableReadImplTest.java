@@ -41,12 +41,12 @@ package com.spotify.bigtable.read;
 
 import static org.junit.Assert.assertEquals;
 
-import com.google.appengine.repackaged.com.google.common.collect.Sets;
 import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.protobuf.ByteString;
 import com.spotify.bigtable.BigtableMock;
 import java.util.List;
