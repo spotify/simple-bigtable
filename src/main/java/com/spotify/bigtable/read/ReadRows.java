@@ -63,7 +63,20 @@ public class ReadRows {
   public interface RowsRead extends RowRead<
       FamilyWithinRowsRead, FamiliesWithinRowsRead, ColumnWithinRowsRead, List<Row>> {
 
+    /**
+     * Add a collection of keys to the read.
+     * @param rowKeys collection of keys
+     * @return a RowsRead
+     * @deprecated use ByteString version as keys are binary
+     */
     RowsRead addKeys(final Collection<String> rowKeys);
+
+    /**
+     * Add a collection of keys to the read.
+     * @param rowKeys collection of keys
+     * @return a RowsRead
+     */
+    RowsRead addBinaryKeys(final Collection<ByteString> rowKeys);
 
     RowsRead limit(final long limit);
 
@@ -86,7 +99,13 @@ public class ReadRows {
     public RowsReadImpl addKeys(Collection<String> rowKeys) {
       final Set<ByteString> iterator =
           rowKeys.stream().map(ByteString::copyFromUtf8).collect(Collectors.toSet());
-      readRequest.setRows(readRequest.getRowsBuilder().addAllRowKeys(iterator));
+      addBinaryKeys(iterator);
+      return this;
+    }
+
+    @Override
+    public RowsReadImpl addBinaryKeys(Collection<ByteString> rowKeys) {
+      readRequest.setRows(readRequest.getRowsBuilder().addAllRowKeys(rowKeys));
       return this;
     }
 
