@@ -38,9 +38,9 @@
 
   <developers>
     <developer>
-      <id>rgruener</id>
-      <name>Robert Gruener</name>
-      <email>robertg@spotify.com</email>
+      <id>keithmcneill</id>
+      <name>Keith McNeill</name>
+      <email>kdm@spotify.com</email>
       <organization>Spotify AB</organization>
       <organizationUrl>http://www.spotify.com</organizationUrl>
       <roles>
