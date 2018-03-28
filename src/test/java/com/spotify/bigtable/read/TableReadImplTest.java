@@ -104,6 +104,20 @@ public class TableReadImplTest {
   }
 
   @Test
+  public void testBinaryKeysRowsCollection() throws Exception {
+    final ImmutableSet<ByteString> rowKeys = ImmutableSet.of(ByteString.copyFromUtf8("row1"),
+        ByteString.copyFromUtf8("row2"));
+    final ReadRow.RowMultiRead.ReadImpl rows = tableRead.rowsWithBinaryKeys(rowKeys);
+    final ReadRowsRequest.Builder readRequest = rows.readRequest();
+    verifyReadRequest(readRequest);
+    assertEquals(rowKeys, Sets.newHashSet(readRequest.getRows().getRowKeysList()));
+    assertEquals(2, readRequest.getRows().getRowKeysCount());
+    assertEquals(0, readRequest.getRows().getRowRangesCount());
+    assertEquals(2, readRequest.getRowsLimit());
+    assertEquals(bigtableMock.getMockedDataClient(), rows.getClient());
+  }
+
+  @Test
   public void testGetClient() throws Exception {
     assertEquals(bigtableMock.getMockedDataClient(), tableRead.getClient());
   }

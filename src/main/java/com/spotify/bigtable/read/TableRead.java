@@ -42,6 +42,7 @@ package com.spotify.bigtable.read;
 import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
+import com.google.protobuf.ByteString;
 import com.spotify.bigtable.Bigtable;
 import com.spotify.bigtable.BigtableTable;
 import com.spotify.bigtable.read.ReadRow.RowMultiRead;
@@ -56,17 +57,39 @@ import java.util.function.Function;
 public interface TableRead {
 
   /**
-   * Read from a single row with given key.
-   *
-   * @param row row key
+   * Read from a single row with String given key. BigTable stores keys as an byte[]. This method
+   * will incur a conversion of each String key to ByteString key.  Use
+   * {@link #rowWithBinaryKey(ByteString)}
+   * @param row a String row key
    * @return Row Read implementation
    */
   RowSingleRead row(final String row);
 
-  RowMultiRead rows(final Collection<String> rowKeys);
-
   RowsRead rows();
 
+  /**
+   * Read rows from a collection of String keys.  BigTable stores keys as an byte[]. This method
+   * will incur a conversion of each String key to ByteString key.  Use
+   * {@link #rowsWithBinaryKeys(Collection)}
+   * @param rowKeys Collection of String keys
+   * @return MutliReadRow
+   * @deprecated use ByteString version since keys are binary
+   */
+  RowMultiRead rows(final Collection<String> rowKeys);
+
+  /**
+   * Read from a single row with given binary key.
+   * @param row a ByteString row key
+   * @return Row Read implementation
+   */
+  RowSingleRead rowWithBinaryKey(final ByteString row);
+
+  /**
+   * Read rows from a colleciton of keys.
+   * @param rowKeys Collection of ByteString keys
+   * @return MutliReadRow
+   */
+  RowMultiRead rowsWithBinaryKeys(final Collection<ByteString> rowKeys);
 
   class TableReadImpl extends BigtableTable implements TableRead, BigtableRead.Internal<List<Row>> {
 
@@ -74,6 +97,7 @@ public interface TableRead {
       super(bigtable, table);
     }
 
+    @Override
     public RowSingleRead.ReadImpl row(final String row) {
       final RowsReadImpl rowsRead = rows().addKeys(Collections.singleton(row)).limit(1);
       return new RowSingleRead.ReadImpl(rowsRead);
@@ -87,6 +111,18 @@ public interface TableRead {
     @Override
     public RowMultiRead.ReadImpl rows(final Collection<String> rowKeys) {
       final RowsReadImpl rowsRead = rows().addKeys(rowKeys).limit(rowKeys.size());
+      return new RowMultiRead.ReadImpl(rowsRead);
+    }
+
+    @Override
+    public RowSingleRead.ReadImpl rowWithBinaryKey(final ByteString row) {
+      final RowsReadImpl rowsRead = rows().addKeysBinary(Collections.singleton(row)).limit(1);
+      return new RowSingleRead.ReadImpl(rowsRead);
+    }
+
+    @Override
+    public RowMultiRead.ReadImpl rowsWithBinaryKeys(final Collection<ByteString> rowKeys) {
+      final RowsReadImpl rowsRead = rows().addKeysBinary(rowKeys).limit(rowKeys.size());
       return new RowMultiRead.ReadImpl(rowsRead);
     }
 
