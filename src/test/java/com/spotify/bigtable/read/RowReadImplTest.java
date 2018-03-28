@@ -70,7 +70,7 @@ public class RowReadImplTest {
   public void setUp() throws Exception {
     final TableRead.TableReadImpl tableRead = new TableRead.TableReadImpl(bigtableMock, "table");
     rowRead = tableRead.row("row");
-    binaryRowRead = tableRead.rowFromBinaryKey(BINARY_KEY);
+    binaryRowRead = tableRead.rowWithBinaryKey(BINARY_KEY);
   }
 
   private void verifyReadRequest(ReadRowsRequest.Builder readRequest) throws Exception {

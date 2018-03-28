@@ -57,18 +57,20 @@ import java.util.function.Function;
 public interface TableRead {
 
   /**
-   * Read from a single row with given key.
-   *
-   * @param row row key
+   * Read from a single row with String given key. BigTable stores keys as an byte[]. This method
+   * will incur a conversion of each String key to ByteString key.  Use
+   * {@link #rowWithBinaryKey(ByteString)}
+   * @param row a String row key
    * @return Row Read implementation
-   * @deprecated use ByteString version since keys are binary
    */
   RowSingleRead row(final String row);
 
   RowsRead rows();
 
   /**
-   * Read rows from a colleciton of keys.
+   * Read rows from a collection of String keys.  BigTable stores keys as an byte[]. This method
+   * will incur a conversion of each String key to ByteString key.  Use
+   * {@link #rowsWithBinaryKeys(Collection)}
    * @param rowKeys Collection of String keys
    * @return MutliReadRow
    * @deprecated use ByteString version since keys are binary
@@ -77,17 +79,17 @@ public interface TableRead {
 
   /**
    * Read from a single row with given binary key.
-   * @param row row key
+   * @param row a ByteString row key
    * @return Row Read implementation
    */
-  RowSingleRead rowFromBinaryKey(final ByteString row);
+  RowSingleRead rowWithBinaryKey(final ByteString row);
 
   /**
    * Read rows from a colleciton of keys.
-   * @param rowKeys Collection of String keys
+   * @param rowKeys Collection of ByteString keys
    * @return MutliReadRow
    */
-  RowMultiRead rowsFromBinaryKeys(final Collection<ByteString> rowKeys);
+  RowMultiRead rowsWithBinaryKeys(final Collection<ByteString> rowKeys);
 
   class TableReadImpl extends BigtableTable implements TableRead, BigtableRead.Internal<List<Row>> {
 
@@ -113,14 +115,14 @@ public interface TableRead {
     }
 
     @Override
-    public RowSingleRead.ReadImpl rowFromBinaryKey(final ByteString row) {
-      final RowsReadImpl rowsRead = rows().addBinaryKeys(Collections.singleton(row)).limit(1);
+    public RowSingleRead.ReadImpl rowWithBinaryKey(final ByteString row) {
+      final RowsReadImpl rowsRead = rows().addKeysBinary(Collections.singleton(row)).limit(1);
       return new RowSingleRead.ReadImpl(rowsRead);
     }
 
     @Override
-    public RowMultiRead.ReadImpl rowsFromBinaryKeys(final Collection<ByteString> rowKeys) {
-      final RowsReadImpl rowsRead = rows().addBinaryKeys(rowKeys).limit(rowKeys.size());
+    public RowMultiRead.ReadImpl rowsWithBinaryKeys(final Collection<ByteString> rowKeys) {
+      final RowsReadImpl rowsRead = rows().addKeysBinary(rowKeys).limit(rowKeys.size());
       return new RowMultiRead.ReadImpl(rowsRead);
     }
 

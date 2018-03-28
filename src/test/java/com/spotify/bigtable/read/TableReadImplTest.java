@@ -107,7 +107,7 @@ public class TableReadImplTest {
   public void testBinaryKeysRowsCollection() throws Exception {
     final ImmutableSet<ByteString> rowKeys = ImmutableSet.of(ByteString.copyFromUtf8("row1"),
         ByteString.copyFromUtf8("row2"));
-    final ReadRow.RowMultiRead.ReadImpl rows = tableRead.rowsFromBinaryKeys(rowKeys);
+    final ReadRow.RowMultiRead.ReadImpl rows = tableRead.rowsWithBinaryKeys(rowKeys);
     final ReadRowsRequest.Builder readRequest = rows.readRequest();
     verifyReadRequest(readRequest);
     assertEquals(rowKeys, Sets.newHashSet(readRequest.getRows().getRowKeysList()));

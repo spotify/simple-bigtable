@@ -64,19 +64,20 @@ public class ReadRows {
       FamilyWithinRowsRead, FamiliesWithinRowsRead, ColumnWithinRowsRead, List<Row>> {
 
     /**
-     * Add a collection of keys to the read.
-     * @param rowKeys collection of keys
+     * Add a collection of String keys to the read.  BigTable stores keys as an byte[]. This method
+     * will incur a conversion of each String key to ByteString key.  Use
+     * {@link #addKeysBinary(Collection)} instead.
+     * @param rowKeys collection of String keys
      * @return a RowsRead
-     * @deprecated use ByteString version as keys are binary
      */
     RowsRead addKeys(final Collection<String> rowKeys);
 
     /**
-     * Add a collection of keys to the read.
-     * @param rowKeys collection of keys
+     * Add a collection of Binary keys to the read.
+     * @param rowKeys collection of ByteString keys
      * @return a RowsRead
      */
-    RowsRead addBinaryKeys(final Collection<ByteString> rowKeys);
+    RowsRead addKeysBinary(final Collection<ByteString> rowKeys);
 
     RowsRead limit(final long limit);
 
@@ -99,12 +100,12 @@ public class ReadRows {
     public RowsReadImpl addKeys(Collection<String> rowKeys) {
       final Set<ByteString> iterator =
           rowKeys.stream().map(ByteString::copyFromUtf8).collect(Collectors.toSet());
-      addBinaryKeys(iterator);
+      addKeysBinary(iterator);
       return this;
     }
 
     @Override
-    public RowsReadImpl addBinaryKeys(Collection<ByteString> rowKeys) {
+    public RowsReadImpl addKeysBinary(Collection<ByteString> rowKeys) {
       readRequest.setRows(readRequest.getRowsBuilder().addAllRowKeys(rowKeys));
       return this;
     }
