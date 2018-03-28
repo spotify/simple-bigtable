@@ -61,7 +61,10 @@ final ListenableFuture<Cell> cell = FuturesExtra.syncTransform(future, rows -> {
 
 The goal of this client is to let you query what you want with minimal overhead (there should
 be no need to create all these filter objects) as well as give you the object you want without
-needing to constantly convert a list of rows down to a single cell.
+needing to constantly convert a list of rows down to a single cell.  Note that these examples
+use a String as a row key.  Bigtable keys are really byte arrays.  Under the cover the string
+"row" is converted to a ByteString.  In reality you should use byte arrays as keys as that will
+be more efficient.
  
 Here is the same query as above using this client wrapper.
 ```java
