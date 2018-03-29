@@ -277,6 +277,24 @@ Pull requests with other ideas are encouraged.
 It is unclear whether there is a need this wrapper to provide the admin operations, though it would be pretty easy
 to include. 
 
+## How to Release
+- To release a new version the easiest way is to do a local build.  Then follow instructions in:
+   [scio instructions](https://github.com/spotify/scio/wiki/How-to-Release#prerequisites) modified to work with maven.
+   For credentials to push to sonatype, create an access token with your sonatype login and place the access token
+   in your maven settings.xml as in:
+
+   ```xml
+    <server>
+      <!-- sonatype repository -->
+      <id>ossrh</id>
+      <username>access-token-name</username> <!-- access token tied to an account sonatype.org -->
+      <password>access-token-password</password>
+    </server>```
+
+   Then a `mvn deploy` should do the rest.
+   With effort we could get automatic deployments via travis.  The travis build console is here:
+   [travis.org](https://travis-ci.org/spotify/simple-bigtable)
+   
 ## Open Problems and Questions
 
 - One problem is that currently it is not really possible to do queries for nested lists. For example there really is

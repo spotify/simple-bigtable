@@ -11,7 +11,4 @@ branches:
 install: true
 
 script:
-  # Run on pull requests (encrypted data not available for pull requests)
-  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then mvn verify; fi'
-  # Run on merges to master
-  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then mvn deploy; fi'
+  mvn verify    
