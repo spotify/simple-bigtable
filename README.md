@@ -292,7 +292,7 @@ to include.
     </server>
 ```
 
--   `mvn deploy` should do the rest.
+-   `mvn clean javadoc:jar source:jar deploy` should do the rest.
 
 -   Release deployments (from mvn deploy) will be put into a staging area at sonatype.  Read the following to release the staged deployment [how to release](http://central.sonatype.org/pages/releasing-the-deployment.html)
 
