@@ -219,7 +219,7 @@ final Empty mutation = bigtable.mutateRow("table", "row")
 
 ### ReadModifyWrite (Atomically Update or Append To A Column)
 
-ReadModifyWrite is useful for either incrementing the latest cell within a column by a long or appenging bytes
+ReadModifyWrite is useful for either incrementing the latest cell within a column by a long or appending bytes
 to the value. If the column is empty, is will write a new value. Once again this operation is on the row level
 with multiple ReadModifyWrites possible in a single request.
 
