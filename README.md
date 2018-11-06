@@ -280,7 +280,7 @@ to include.
 ## How to Release
 - A local build and deploy is the easiest way to make a release at this point.  For setup follow instructions in:
    [scio instructions](https://github.com/spotify/scio/wiki/How-to-Release#prerequisites) modified to work with maven.
-   For credentials to push to sonatype, create an access token with your sonatype login and place the access token
+   For credentials to push to [sonatype](https://oss.sonatype.org/content/repositories/snapshots/com/spotify/simple-bigtable/), create an access token with your sonatype login and place the access token
    in your maven settings.xml as in:
 
 ```xml
