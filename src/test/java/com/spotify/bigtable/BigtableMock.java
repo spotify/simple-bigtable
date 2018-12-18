@@ -39,7 +39,6 @@
 
 package com.spotify.bigtable;
 
-import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.cloud.bigtable.config.BigtableOptions;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
 import com.google.cloud.bigtable.grpc.BigtableInstanceName;
@@ -78,7 +77,7 @@ public class BigtableMock extends Bigtable {
       Mockito.when(session.getOptions()).thenReturn(options);
       Mockito.when(options.getInstanceName()).thenReturn(new BigtableInstanceName(PROJECT_ID, INSTANCE_ID));
     } catch (IOException e) {
-      Throwables.propagate(e);
+      throw new RuntimeException(e);
     }
 
     return new BigtableMock(session, PROJECT_ID, INSTANCE_ID);
@@ -94,7 +93,7 @@ public class BigtableMock extends Bigtable {
       Mockito.when(session.getDataClient()).thenReturn(dataClient);
       Mockito.when(session.getTableAdminClient()).thenReturn(tableAdminClient);
     } catch (IOException e) {
-      Throwables.propagate(e);
+      throw new RuntimeException(e);
     }
 
     return new BigtableMock(session, project, instance);
