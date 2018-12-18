@@ -43,8 +43,10 @@ import com.google.bigtable.v2.ReadRowsRequest;
 import com.google.bigtable.v2.Row;
 import com.google.bigtable.v2.RowFilter;
 import com.google.cloud.bigtable.grpc.BigtableDataClient;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.spotify.futures.FuturesExtra;
+import com.google.common.util.concurrent.MoreExecutors;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -72,7 +74,8 @@ abstract class AbstractBigtableRead<P, T> implements BigtableRead<T>, BigtableRe
   @Override
   public ListenableFuture<T> executeAsync() {
     final ListenableFuture<List<Row>> future = getClient().readRowsAsync(readRequest().build());
-    return FuturesExtra.syncTransform(future, rows -> toDataType().apply(rows));
+    return Futures.transform(future, rows -> toDataType().apply(rows),
+            MoreExecutors.directExecutor());
   }
 
   @Override

@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>simple-bigtable</artifactId>
-  <version>0.4.0</version>
+  <version>0.4.1</version>
   <packaging>jar</packaging>
   <name>simple-bigtable</name>
   <description>A wrapper around the Bigtable RPC client</description>
@@ -52,14 +52,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.spotify</groupId>
-      <artifactId>futures-extra</artifactId>
-      <version>2.6.1</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.cloud.bigtable</groupId>
       <artifactId>bigtable-client-core</artifactId>
-      <version>1.6.0</version>
+      <version>1.7.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.google.code.findbugs</groupId>
@@ -78,16 +73,10 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- Bigtable Needs Guava 20  -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>20.0</version>
-    </dependency>
     <dependency>
       <groupId>com.google.http-client</groupId>
       <artifactId>google-http-client-jackson2</artifactId>
-      <version>1.24.1</version>
+      <version>1.27.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.errorprone</groupId>
@@ -97,7 +86,12 @@
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-context</artifactId>
-      <version>1.13.1</version>
+      <version>1.16.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>animal-sniffer-annotations</artifactId>
+      <version>1.17</version>
     </dependency>
     <!-- BigTable needs this version of Netty included to connect include linux and osx base 64 versions-->
     <dependency>
