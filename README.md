@@ -1,4 +1,5 @@
 # Simple Bigtable
+[![Mentioned in Awesome Bigtable](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/zrosenbauer/awesome-bigtable)
 
 ## Overview
 
